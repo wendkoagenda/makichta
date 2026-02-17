@@ -8,6 +8,7 @@
 - [ ] Mettre en place la couche DB (Prisma + SQLite) avec database-schema.md
 - [ ] Définir le schéma v1 et exécuter la première migration
 - [ ] Créer le module de paramétrage utilisateur (devise, période de référence, modules actifs)
+- [ ] Documenter les conventions de code ([docs/coding-conventions.md](docs/coding-conventions.md))
 
 ## Sprint 1 - Noyau budget
 

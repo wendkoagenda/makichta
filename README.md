@@ -24,7 +24,8 @@ Fournir une vision claire des revenus, dépenses, épargne et investissements av
 
 ## Structure initiale
 
-- `docs/architecture.md` : choix d'architecture et conventions
+- `docs/architecture.md` : choix d'architecture et structure des dossiers
+- `docs/coding-conventions.md` : conventions de nommage et règles de code
 - `docs/database-schema.md` : diagramme UML et description de la base de données
 - `docs/backlog-mvp.md` : backlog priorisé du MVP
 - `.env.example` : variables d'environnement de départ

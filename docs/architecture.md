@@ -51,36 +51,50 @@ Le poste investissement issu de la répartition alimente un suivi par type (acti
 
 Un bien enregistré (valeur d'achat, durée, date d'acquisition) génère un calcul automatique mensuel et annuel avec valeur résiduelle mise à jour.
 
-## Organisation suggérée des dossiers (future)
+## Organisation des dossiers
+
+Structure par **models** : chaque modèle métier est un mini-module autonome contenant ses composants, hooks, services, utils et types. Les composants sont indépendants et réutilisables dans toute l'application.
 
 ```txt
 src/
-  app/
+  models/
+    revenues/
+      components/         # revenue-form.tsx, revenue-list.tsx, create-revenue-dialog.tsx
+      hooks/              # use-revenues.ts, use-revenue-source.ts
+      utils/              # calculate-total.ts, format-revenue.ts
+      services/           # get-revenues.ts, create-revenue.ts, delete-revenue.ts
+      types/              # revenue.ts, revenue-source.ts
+    expenses/
+      components/
+      hooks/
+      utils/
+      services/
+      types/
+    allocations/
+    savings/
+    investments/
+    planning/
+    wishlist/
+    depreciation/
+    settings/
+  components/             # composants partagés (sidebar.tsx, date-picker.tsx, etc.)
+  hooks/                  # hooks globaux (use-auth.ts, use-theme.ts)
+  utils/                  # utilitaires globaux (format-currency.ts, format-date.ts)
+  services/               # services globaux (auth.ts, config.ts)
+  types/                  # types globaux (user.ts, api-response.ts)
+  store/
+    index.ts
+    slices/               # revenues-slice.ts, expenses-slice.ts, etc.
+  lib/
+    db/
+    constants/            # devises, périodes, catégories par défaut
+  app/                    # routage Next.js uniquement
     (auth)/
     (dashboard)/
     api/
-  features/
-    auth/
-    revenues/          # sources + saisie des revenus
-    allocations/       # répartition par pourcentages
-    expenses/          # catégories + saisie des dépenses
-    savings/           # objectifs d'épargne
-    investments/       # suivi investissements
-    planning/          # dépenses planifiées
-    wishlist/          # backlog d'achats
-    depreciation/      # amortissement des biens
-    settings/          # paramétrage utilisateur (devise, période, modules)
-  components/
-    ui/                # composants shadcn/ui
-    shared/            # composants partagés (layout, navigation, indicateurs)
-  store/
-    index.ts
-    slices/
-  lib/
-    db/
-    utils/
-    constants/         # devises, périodes, catégories par défaut
 ```
+
+Nomenclature des fichiers : **kebab-case, anglais**. Voir [docs/coding-conventions.md](docs/coding-conventions.md).
 
 ## Gestion d'état (Redux Toolkit)
 

@@ -1,4 +1,4 @@
-# Cahier des charges – Application de gestion des finances personnelles
+# Cahier des charges – Application de gestion des finances personnelles (Ma kichta)
 
 ## 1. Contexte et objectifs
 
