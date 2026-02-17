@@ -13,9 +13,6 @@ erDiagram
         string name
         string currency
         string periodReference
-        boolean investmentModuleActive
-        boolean depreciationModuleActive
-        boolean wishlistModuleActive
         datetime createdAt
         datetime updatedAt
     }
@@ -167,7 +164,7 @@ erDiagram
 
 ### User
 
-Utilisateur de l'application. Porte les préférences globales (devise, période, modules actifs). Toutes les entités métier sont cloisonnées par `userId`.
+Utilisateur de l'application. Porte les préférences globales (devise d'affichage parmi USDT/XOF/EUR/USD, période). Toutes les saisies sont en USDT. Toutes les entités métier sont cloisonnées par `userId`.
 
 ### RevenueSource
 

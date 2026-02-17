@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String
+  name            String
+  currency        String   @default("USDT")
+  periodReference String   @default("MONTHLY")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  revenueSources   RevenueSource[]
+  revenues         Revenue[]
+  allocationRules  AllocationRule[]
+  expenseCategories ExpenseCategory[]
+  expenses         Expense[]
+  savingGoals      SavingGoal[]
+  investments      Investment[]
+  plannedExpenses  PlannedExpense[]
+  wishlistItems    WishlistItem[]
+  assets           Asset[]
+}
+
+model RevenueSource {
+  id                 String   @id @default(cuid())
+  userId             String
+  label              String
+  frequency          String
+  recurrenceInterval String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  revenues Revenue[]
+
+  @@index([userId])
+}
+
+model Revenue {
+  id          String   @id @default(cuid())
+  userId      String
+  sourceId    String
+  amount      Float
+  date        DateTime
+  description String   @default("")
+  createdAt   DateTime @default(now())
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  source      RevenueSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  allocations Allocation[]
+
+  @@index([userId])
+  @@index([sourceId])
+}
+
+model AllocationRule {
+  id         String   @id @default(cuid())
+  userId     String
+  label      String
+  percentage Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  allocations Allocation[]
+
+  @@index([userId])
+}
+
+model Allocation {
+  id        String   @id @default(cuid())
+  revenueId String
+  ruleId    String
+  amount    Float
+  createdAt DateTime @default(now())
+
+  revenue Revenue        @relation(fields: [revenueId], references: [id], onDelete: Cascade)
+  rule    AllocationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([revenueId])
+  @@index([ruleId])
+}
+
+model ExpenseCategory {
+  id            String   @id @default(cuid())
+  userId        String
+  label         String
+  type          String
+  monthlyBudget Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses Expense[]
+
+  @@index([userId])
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  userId      String
+  categoryId  String
+  amount      Float
+  date        DateTime
+  description String   @default("")
+  createdAt   DateTime @default(now())
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([categoryId])
+}
+
+model SavingGoal {
+  id            String    @id @default(cuid())
+  userId        String
+  label         String
+  targetAmount  Float
+  currentAmount Float     @default(0)
+  deadline      DateTime?
+  priority      String    @default("MEDIUM")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contributions SavingContribution[]
+  wishlistItems WishlistItem[]
+
+  @@index([userId])
+}
+
+model SavingContribution {
+  id           String   @id @default(cuid())
+  savingGoalId String
+  amount       Float
+  date         DateTime
+  isAutomatic  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  savingGoal SavingGoal @relation(fields: [savingGoalId], references: [id], onDelete: Cascade)
+
+  @@index([savingGoalId])
+}
+
+model Investment {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  amount      Float
+  date        DateTime
+  description String   @default("")
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PlannedExpense {
+  id                 String   @id @default(cuid())
+  userId             String
+  label              String
+  estimatedAmount    Float
+  dueDate            DateTime
+  isRecurring        Boolean  @default(false)
+  recurrenceInterval String?
+  isDone             Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model WishlistItem {
+  id            String   @id @default(cuid())
+  userId        String
+  label         String
+  estimatedCost Float
+  priority      String   @default("MEDIUM")
+  url           String?
+  savingGoalId  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  savingGoal SavingGoal? @relation(fields: [savingGoalId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([savingGoalId])
+}
+
+model Asset {
+  id                        String   @id @default(cuid())
+  userId                    String
+  label                     String
+  purchaseValue             Float
+  depreciationDurationMonths Int
+  acquisitionDate           DateTime
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
