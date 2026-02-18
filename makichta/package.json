@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postinstall": "node scripts/select-db-schema.mjs && prisma generate",
+    "prestart": "node scripts/migrate-deploy.mjs",
     "start": "next start",
     "lint": "eslint"
   },
