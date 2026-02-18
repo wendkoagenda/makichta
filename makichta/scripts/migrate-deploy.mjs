@@ -36,9 +36,17 @@ if (process.env.NODE_ENV !== "production") {
 
 process.env.DATABASE_URL = buildDatabaseUrl(engine);
 
-console.log(`[migrate-deploy] Applying migrations (${engine})...`);
-execSync("npx prisma migrate deploy", {
-  stdio: "inherit",
-  cwd: path.join(__dirname, ".."),
-});
+if (engine === "mysql") {
+  console.log("[migrate-deploy] Pushing schema to MySQL...");
+  execSync("npx prisma db push", {
+    stdio: "inherit",
+    cwd: path.join(__dirname, ".."),
+  });
+} else {
+  console.log("[migrate-deploy] Applying migrations (SQLite)...");
+  execSync("npx prisma migrate deploy", {
+    stdio: "inherit",
+    cwd: path.join(__dirname, ".."),
+  });
+}
 console.log("[migrate-deploy] Done.");

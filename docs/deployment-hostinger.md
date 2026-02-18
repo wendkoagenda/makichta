@@ -24,26 +24,27 @@
 
 Voir `.env.production.example` à la racine du projet pour un modèle complet.
 
-## Migrations au démarrage
+## Créer la base MySQL (obligatoire avant le premier déploiement)
 
-Sur Business Web Hosting (pas de pipeline Docker, pas de hooks), le flux de déploiement est :
+**Prisma crée les tables, pas la base.** La base MySQL vide doit exister avant `npm run start` :
+
+1. Panneau Hostinger → **Bases de données MySQL**
+2. Créer une nouvelle base (ex. `u284690278_makichta`)
+3. Créer un utilisateur MySQL avec tous les droits sur cette base
+4. Définir `DB_NAME`, `DB_USER`, `DB_PASSWORD` dans les variables d'environnement
+
+## Schéma au démarrage
 
 ```
 npm install     → postinstall : sélection schéma + prisma generate
 npm run build   → next build
-npm run start   → prestart : prisma migrate deploy (prod uniquement)
+npm run start   → prestart : prisma db push (MySQL) ou migrate deploy (SQLite)
                 → start : next start
 ```
 
-- `postinstall` : génère le client Prisma une seule fois (avec le bon schéma sqlite/mysql)
-- `prestart` : applique les migrations **uniquement en production** (`NODE_ENV=production`). En local, le script est ignoré
-- Le script `migrate-deploy.mjs` construit `DATABASE_URL` à partir des variables `DB_*`, puis lance `prisma migrate deploy` (idempotent, avec verrouillage DB)
-
-- **`prisma migrate deploy`** : applique les migrations en attente (idempotent, verrouillage DB)
-- Si les migrations échouent, l'app ne démarre pas (pas de trafic servi avec un schéma obsolète)
-- S'il n'y a pas de migration en attente, la commande termine immédiatement
-
-**Important** : Les migrations actuelles ont été créées pour SQLite. Pour MySQL en production, il faut soit générer des migrations compatibles MySQL (`prisma migrate dev` avec `schema.mysql.prisma`), soit initialiser la base MySQL avec `prisma db push` une première fois.
+- **MySQL** : `prisma db push` crée/met à jour les tables (les migrations sont SQLite, donc on utilise db push pour MySQL)
+- **SQLite** : `prisma migrate deploy` applique les migrations
+- Si la base n'existe pas ou les identifiants sont incorrects, l'app ne démarre pas
 
 ## Après modification des variables
 
