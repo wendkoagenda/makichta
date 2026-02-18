@@ -37,6 +37,10 @@ export const revenuesSlice = createSlice({
     addSource(state, action: PayloadAction<RevenueSource>) {
       state.sources.push(action.payload);
     },
+    updateSource(state, action: PayloadAction<RevenueSource>) {
+      const i = state.sources.findIndex((s) => s.id === action.payload.id);
+      if (i >= 0) state.sources[i] = action.payload;
+    },
     removeSource(state, action: PayloadAction<string>) {
       state.sources = state.sources.filter((s) => s.id !== action.payload);
     },
@@ -45,6 +49,10 @@ export const revenuesSlice = createSlice({
     },
     addRevenue(state, action: PayloadAction<Revenue>) {
       state.revenues.push(action.payload);
+    },
+    updateRevenue(state, action: PayloadAction<Revenue>) {
+      const i = state.revenues.findIndex((r) => r.id === action.payload.id);
+      if (i >= 0) state.revenues[i] = action.payload;
     },
     removeRevenue(state, action: PayloadAction<string>) {
       state.revenues = state.revenues.filter((r) => r.id !== action.payload);
@@ -58,9 +66,11 @@ export const revenuesSlice = createSlice({
 export const {
   setSources,
   addSource,
+  updateSource,
   removeSource,
   setRevenues,
   addRevenue,
+  updateRevenue,
   removeRevenue,
   setLoading,
 } = revenuesSlice.actions;

@@ -19,13 +19,13 @@
 
 ### Sources de revenus (paramétrables)
 
-- [ ] CRUD des types de sources de revenus définis par l'utilisateur (ex. : salaire, freelance, prime, allocation, rental, etc.)
-- [ ] Chaque source a un libellé personnalisable
-- [ ] Fréquence configurable par source :
+- [x] CRUD des types de sources de revenus définis par l'utilisateur (ex. : salaire, freelance, prime, allocation, rental, etc.)
+- [x] Chaque source a un libellé personnalisable
+- [x] Fréquence configurable par source :
   - récurrente (mensuelle, hebdomadaire, etc.)
   - ponctuelle (mission freelance, vente, don, etc.)
-- [ ] Saisie de chaque revenu : montant, date de perception, source associée
-- [ ] Historique des revenus par source et par mois
+- [x] Saisie de chaque revenu : montant, date de perception, source associée
+- [x] Historique des revenus par source et par mois
 
 ### Catégories de dépenses
 
