@@ -1,3 +1,7 @@
+"use client";
+
+import { SavingGoalList } from "@/models/saving-goals/components/saving-goal-list";
+
 export default function SavingsPage() {
   return (
     <div className="space-y-8">
@@ -7,6 +11,7 @@ export default function SavingsPage() {
           Créez des objectifs d&apos;épargne et suivez votre progression
         </p>
       </div>
+      <SavingGoalList />
     </div>
   );
 }

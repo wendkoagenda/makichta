@@ -6,7 +6,7 @@ export interface PlannedExpense {
   estimatedAmount: number;
   dueDate: string;
   isRecurring: boolean;
-  recurrenceInterval: "MONTHLY" | "YEARLY" | null;
+  recurrenceInterval: string | null;
   isDone: boolean;
 }
 

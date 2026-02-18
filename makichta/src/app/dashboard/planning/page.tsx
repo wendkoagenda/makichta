@@ -1,3 +1,7 @@
+"use client";
+
+import { PlannedExpenseList } from "@/models/planned-expenses/components/planned-expense-list";
+
 export default function PlanningPage() {
   return (
     <div className="space-y-8">
@@ -7,6 +11,7 @@ export default function PlanningPage() {
           Planifiez vos dépenses futures et anticipez votre budget
         </p>
       </div>
+      <PlannedExpenseList />
     </div>
   );
 }

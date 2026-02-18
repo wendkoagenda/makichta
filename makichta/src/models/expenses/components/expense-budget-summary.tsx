@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from "@/models/settings/hooks/use-currency";
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Calendar } from "lucide-react";
 
 function getCurrentMonth() {
   const now = new Date();
@@ -25,10 +25,20 @@ interface CategorySummary {
   remaining: number;
 }
 
+interface PlannedExpenseForMonth {
+  id: string;
+  label: string;
+  estimatedAmount: number;
+  dueDate: string;
+  isRecurring: boolean;
+}
+
 interface ExpenseSummary {
   month: string;
   totalRevenues: number;
   totalExpenses: number;
+  totalPlannedExpenses: number;
+  plannedExpenses: PlannedExpenseForMonth[];
   categories: CategorySummary[];
 }
 
@@ -120,7 +130,29 @@ export function ExpenseBudgetSummary({ refreshKey = 0 }: ExpenseBudgetSummaryPro
               <p className="text-xs text-muted-foreground">
                 Revenus {monthLabel} : {convertAndFormat(summary.totalRevenues)} · Dépenses :{" "}
                 {convertAndFormat(summary.totalExpenses)}
+                {summary.totalPlannedExpenses > 0 && (
+                  <> · Dépenses planifiées : {convertAndFormat(summary.totalPlannedExpenses)}</>
+                )}
               </p>
+              {summary.plannedExpenses.length > 0 && (
+                <div className="rounded-lg border border-border bg-muted/30 p-3">
+                  <p className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                    <Calendar size={12} />
+                    Dépenses prévues ce mois
+                  </p>
+                  <ul className="space-y-1 text-sm">
+                    {summary.plannedExpenses.map((p) => (
+                      <li key={p.id} className="flex justify-between">
+                        <span>{p.label}</span>
+                        <span>{convertAndFormat(p.estimatedAmount)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 border-t border-border pt-2 text-xs font-medium">
+                    Total prévu : {convertAndFormat(summary.totalPlannedExpenses)}
+                  </p>
+                </div>
+              )}
               <ul className="space-y-2">
                 {summary.categories.map((cat) => (
                   <li

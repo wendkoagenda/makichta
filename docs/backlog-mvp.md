@@ -51,40 +51,40 @@
 
 ### Objectifs d'épargne
 
-- [ ] Création d'objectifs (ex. : fonds d'urgence, voyage, achat immobilier)
-- [ ] Paramètres par objectif : montant cible, échéance, priorité
-- [ ] Suivi de progression : pourcentage atteint, montant épargné, montant restant
-- [ ] Alimentation automatique via la part "épargne" de la répartition des revenus
-- [ ] Répartition entre objectifs selon la priorité ou un pourcentage défini
+- [x] Création d'objectifs (ex. : fonds d'urgence, voyage, achat immobilier)
+- [x] Paramètres par objectif : montant cible, échéance, priorité
+- [x] Suivi de progression : pourcentage atteint, montant épargné, montant restant
+- [x] Alimentation automatique via la part "épargne" de la répartition des revenus
+- [x] Répartition entre objectifs selon la priorité ou un pourcentage défini
 
 ### Investissement
 
-- [ ] Suivi des montants investis par type (actions, crypto, immobilier, autres)
-- [ ] Historique des opérations d'investissement (date, montant, type)
-- [ ] Vision globale de l'allocation investissement (répartition par type en %)
-- [ ] Lien avec les revenus alloués : montant dédié à l'investissement via la répartition
+- [x] Suivi des montants investis par type (actions, crypto, immobilier, autres)
+- [x] Historique des opérations d'investissement (date, montant, type)
+- [x] Vision globale de l'allocation investissement (répartition par type en %)
+- [x] Lien avec les revenus alloués : montant dédié à l'investissement via la répartition
 
 ## Sprint 3 - Planification avancée
 
 ### Dépenses planifiées
 
-- [ ] Planification de dépenses futures (ponctuelles ou récurrentes)
-- [ ] Date prévue et montant estimé
-- [ ] Impact automatique sur le budget futur (mois concerné)
-- [ ] Marquage "effectuée" quand la dépense est réalisée
+- [x] Planification de dépenses futures (ponctuelles ou récurrentes)
+- [x] Date prévue et montant estimé
+- [x] Impact automatique sur le budget futur (mois concerné)
+- [x] Marquage "effectuée" quand la dépense est réalisée
 
 ### Wishlist financière (backlog d'achats)
 
-- [ ] Liste des achats souhaités à moyen/long terme
-- [ ] Par item : libellé, estimation du coût, priorité (haute/moyenne/basse), lien URL optionnel
-- [ ] Conversion d'un item wishlist en objectif d'épargne en un clic
+- [x] Liste des achats souhaités à moyen/long terme
+- [x] Par item : libellé, estimation du coût, priorité (haute/moyenne/basse), lien URL optionnel
+- [x] Conversion d'un item wishlist en objectif d'épargne en un clic
 
 ### Amortissement des biens
 
-- [ ] Enregistrement d'un bien : libellé, valeur d'achat, durée d'amortissement (en mois ou années), date d'acquisition
-- [ ] Calcul automatique de l'amortissement mensuel et annuel (linéaire)
-- [ ] Affichage de la valeur résiduelle à date
-- [ ] Liste des biens avec statut (en cours / amorti)
+- [x] Enregistrement d'un bien : libellé, valeur d'achat, durée d'amortissement (en mois ou années), date d'acquisition
+- [x] Calcul automatique de l'amortissement mensuel et annuel (linéaire)
+- [x] Affichage de la valeur résiduelle à date
+- [x] Liste des biens avec statut (en cours / amorti)
 
 ## Sprint 4 - Finition produit
 

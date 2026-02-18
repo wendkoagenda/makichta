@@ -1,3 +1,7 @@
+"use client";
+
+import { AssetList } from "@/models/assets/components/asset-list";
+
 export default function DepreciationPage() {
   return (
     <div className="space-y-8">
@@ -7,6 +11,7 @@ export default function DepreciationPage() {
           Suivez l&apos;amortissement de vos biens et leur valeur résiduelle
         </p>
       </div>
+      <AssetList />
     </div>
   );
 }

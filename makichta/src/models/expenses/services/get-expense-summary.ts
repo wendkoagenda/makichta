@@ -9,10 +9,20 @@ export interface CategorySummary {
   remaining: number;
 }
 
+export interface PlannedExpenseForMonth {
+  id: string;
+  label: string;
+  estimatedAmount: number;
+  dueDate: string;
+  isRecurring: boolean;
+}
+
 export interface ExpenseSummary {
   month: string;
   totalRevenues: number;
   totalExpenses: number;
+  totalPlannedExpenses: number;
+  plannedExpenses: PlannedExpenseForMonth[];
   categories: CategorySummary[];
 }
 
@@ -24,7 +34,7 @@ export async function getExpenseSummary(
   const start = new Date(year, m - 1, 1);
   const end = new Date(year, m, 1);
 
-  const [categories, expenses, revenues] = await Promise.all([
+  const [categories, expenses, revenues, plannedExpenses] = await Promise.all([
     prisma.expenseCategory.findMany({
       where: { userId },
       orderBy: { label: "asc" },
@@ -41,10 +51,28 @@ export async function getExpenseSummary(
         date: { gte: start, lt: end },
       },
     }),
+    prisma.plannedExpense.findMany({
+      where: {
+        userId,
+        isDone: false,
+        dueDate: { gte: start, lt: end },
+      },
+    }),
   ]);
 
   const totalRevenues = revenues.reduce((s, r) => s + r.amount, 0);
   const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
+  const totalPlannedExpenses = plannedExpenses.reduce(
+    (s, p) => s + p.estimatedAmount,
+    0
+  );
+  const plannedForMonth: PlannedExpenseForMonth[] = plannedExpenses.map((p) => ({
+    id: p.id,
+    label: p.label,
+    estimatedAmount: p.estimatedAmount,
+    dueDate: p.dueDate.toISOString().slice(0, 10),
+    isRecurring: p.isRecurring,
+  }));
 
   const spentByCategory = expenses.reduce(
     (acc, e) => {
@@ -75,6 +103,8 @@ export async function getExpenseSummary(
     month,
     totalRevenues,
     totalExpenses,
+    totalPlannedExpenses,
+    plannedExpenses: plannedForMonth,
     categories: categoriesSummary,
   };
 }

@@ -6,6 +6,8 @@ export interface Asset {
   purchaseValue: number;
   depreciationDurationMonths: number;
   acquisitionDate: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface DepreciationState {
