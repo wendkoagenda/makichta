@@ -17,7 +17,7 @@ export async function seedDefaultAllocationRules(
   });
   if (existing) return [];
 
-  const rules = await prisma.allocationRule.createManyAndReturn({
+  await prisma.allocationRule.createMany({
     data: DEFAULT_RULES.map((r) => ({
       userId,
       label: r.label,
@@ -25,7 +25,12 @@ export async function seedDefaultAllocationRules(
     })),
   });
 
-  return rules.map((r) => ({
+  const created = await prisma.allocationRule.findMany({
+    where: { userId },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return created.map((r: { id: string; label: string; percentage: number; createdAt: Date; updatedAt: Date }) => ({
     id: r.id,
     label: r.label,
     percentage: r.percentage,
