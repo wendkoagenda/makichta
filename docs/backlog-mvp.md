@@ -1,21 +1,21 @@
 # Backlog MVP (priorisé)
 
-## Sprint 0 - Setup technique
+## Sprint 0 - Setup technique (fait)
 
-- [ ] Initialiser projet `Next.js` + TypeScript
-- [ ] Installer et configurer `shadcn/ui`
-- [ ] Créer le store `Redux Toolkit`
-- [ ] Mettre en place la couche DB (Prisma + SQLite) avec database-schema.md
-- [ ] Définir le schéma v1 et exécuter la première migration
-- [ ] Créer le module de paramétrage utilisateur (devise, période de référence, modules actifs)
-- [ ] Documenter les conventions de code ([docs/coding-conventions.md](docs/coding-conventions.md))
+- [x] Initialiser projet `Next.js` + TypeScript
+- [x] Installer et configurer `shadcn/ui`
+- [x] Créer le store `Redux Toolkit`
+- [x] Mettre en place la couche DB (Prisma + SQLite) avec database-schema.md
+- [x] Définir le schéma v1 et exécuter la première migration
+- [x] Créer le module de paramétrage utilisateur (devise USDT/XOF/EUR/USD, période, conversion API)
+- [x] Documenter les conventions de code ([docs/coding-conventions.md](docs/coding-conventions.md))
 
 ## Sprint 1 - Noyau budget
 
-### Authentification
+### Authentification (fait)
 
-- [ ] Inscription, connexion, gestion de session
-- [ ] Protection des routes (middleware)
+- [x] Inscription, connexion, gestion de session (NextAuth + Credentials + bcrypt)
+- [x] Protection des routes (middleware)
 
 ### Sources de revenus (paramétrables)
 
@@ -98,9 +98,9 @@
 
 ### Paramétrage et personnalisation
 
-- [ ] Choix de la devise (EUR par défaut)
-- [ ] Période de référence (mensuelle par défaut)
-- [ ] Activation/désactivation de modules : investissement, amortissement, wishlist
+- [x] Choix de la devise d'affichage (USDT, XOF, EUR, USD)
+- [x] Période de référence (mensuelle par défaut)
+- [x] Conversion des montants USDT via API de taux de change
 - [ ] Sauvegarde et restauration des données utilisateur
 
 ### UX et qualité

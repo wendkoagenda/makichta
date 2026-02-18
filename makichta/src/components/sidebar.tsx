@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/models/settings/hooks/use-settings";
+import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   Wallet,
@@ -15,6 +17,7 @@ import {
   ShoppingBag,
   Building2,
   Settings,
+  LogOut,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -68,10 +71,19 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      <div className="border-t border-border px-6 py-4">
+      <div className="space-y-2 border-t border-border px-6 py-4">
         <p className="text-xs text-muted-foreground">
           Devise : {settings.currency}
         </p>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 text-muted-foreground"
+          onClick={() => signOut({ callbackUrl: "/login" })}
+        >
+          <LogOut size={16} />
+          Déconnexion
+        </Button>
       </div>
     </aside>
   );
