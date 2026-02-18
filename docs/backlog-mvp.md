@@ -26,25 +26,26 @@
   - ponctuelle (mission freelance, vente, don, etc.)
 - [x] Saisie de chaque revenu : montant, date de perception, source associée
 - [x] Historique des revenus par source et par mois
+- [x] UX : dialog création revenu, accordéons par mois (vue « Afficher tous les mois »), stylage charte graphique
 
 ### Catégories de dépenses
 
-- [ ] CRUD des catégories de dépenses (fixes / variables)
-- [ ] Affectation d'un budget mensuel par catégorie (montant prévu)
-- [ ] Exemples de catégories par défaut proposées à la création du compte (loyer, alimentation, transport, loisirs, abonnements, assurances)
+- [x] CRUD des catégories de dépenses (fixes / variables)
+- [x] Affectation d'un budget mensuel par catégorie (montant fixe ou % des revenus)
+- [x] Exemples de catégories par défaut proposées à la création du compte (loyer, alimentation, transport, loisirs, abonnements, assurances)
 
 ### Répartition automatique des revenus
 
-- [ ] Paramétrage de pourcentages par poste (épargne, charges fixes, loisirs, investissement, etc.)
-- [ ] Calcul automatique des montants alloués à chaque poste dès qu'un revenu est saisi
-- [ ] Modification des pourcentages à tout moment avec recalcul immédiat
+- [x] Paramétrage de pourcentages par poste (épargne, charges fixes, loisirs, investissement, etc.)
+- [x] Calcul automatique des montants alloués à chaque poste dès qu'un revenu est saisi
+- [x] Modification des pourcentages à tout moment (les nouveaux revenus utilisent les règles à jour)
 
 ### Suivi des dépenses
 
-- [ ] Saisie manuelle des dépenses
-- [ ] Association obligatoire à une catégorie de dépense
-- [ ] Résumé mensuel : total dépenses, comparaison budget prévu vs réel par catégorie
-- [ ] Alertes visuelles en cas de dépassement du budget d'une catégorie
+- [x] Saisie manuelle des dépenses
+- [x] Association obligatoire à une catégorie de dépense
+- [x] Résumé mensuel : total dépenses, comparaison budget prévu vs réel par catégorie
+- [x] Alertes visuelles en cas de dépassement du budget d'une catégorie
 
 ## Sprint 2 - Épargne et investissement
 
@@ -101,6 +102,7 @@
 - [x] Choix de la devise d'affichage (USDT, XOF, EUR, USD)
 - [x] Période de référence (mensuelle par défaut)
 - [x] Conversion des montants USDT via API de taux de change
+- [x] Thème dark + or (charte graphique)
 - [ ] Sauvegarde et restauration des données utilisateur
 
 ### UX et qualité

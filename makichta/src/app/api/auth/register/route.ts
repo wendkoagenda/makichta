@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
+import { seedDefaultExpenseCategories } from "@/models/expense-categories/services/seed-default-categories";
+import { seedDefaultAllocationRules } from "@/models/allocation-rules/services/seed-default-rules";
 
 export async function POST(request: Request) {
   try {
@@ -41,6 +43,9 @@ export async function POST(request: Request) {
         name: name ?? email.split("@")[0],
       },
     });
+
+    await seedDefaultExpenseCategories(user.id);
+    await seedDefaultAllocationRules(user.id);
 
     return NextResponse.json({
       id: user.id,

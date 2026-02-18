@@ -1,0 +1,35 @@
+import { prisma } from "@/lib/db";
+import type { AllocationRule } from "../types/allocation-rule";
+
+const DEFAULT_RULES = [
+  { label: "Épargne", percentage: 20 },
+  { label: "Charges fixes", percentage: 40 },
+  { label: "Loisirs", percentage: 15 },
+  { label: "Investissement", percentage: 10 },
+  { label: "Alimentation", percentage: 15 },
+];
+
+export async function seedDefaultAllocationRules(
+  userId: string
+): Promise<AllocationRule[]> {
+  const existing = await prisma.allocationRule.findFirst({
+    where: { userId },
+  });
+  if (existing) return [];
+
+  const rules = await prisma.allocationRule.createManyAndReturn({
+    data: DEFAULT_RULES.map((r) => ({
+      userId,
+      label: r.label,
+      percentage: r.percentage,
+    })),
+  });
+
+  return rules.map((r) => ({
+    id: r.id,
+    label: r.label,
+    percentage: r.percentage,
+    createdAt: r.createdAt?.toISOString(),
+    updatedAt: r.updatedAt?.toISOString(),
+  }));
+}

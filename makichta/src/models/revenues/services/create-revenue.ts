@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import type { CreateRevenueInput, Revenue } from "../types/revenue";
+import { createAllocationsForRevenue } from "@/models/allocation-rules/services/create-allocations-for-revenue";
 
 export async function createRevenue(
   userId: string,
@@ -14,6 +15,8 @@ export async function createRevenue(
       description: input.description ?? "",
     },
   });
+
+  await createAllocationsForRevenue(userId, row.id, row.amount);
 
   return {
     id: row.id,

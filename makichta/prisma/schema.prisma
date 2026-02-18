@@ -95,6 +95,7 @@ model ExpenseCategory {
   label         String
   type          String
   monthlyBudget Float    @default(0)
+  budgetPercent Float?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import type { UpdateRevenueInput, Revenue } from "../types/revenue";
+import { recalculateAllocationsForRevenue } from "@/models/allocation-rules/services/create-allocations-for-revenue";
 
 export async function updateRevenue(
   userId: string,
@@ -20,6 +21,10 @@ export async function updateRevenue(
 
   const updated = await prisma.revenue.findUnique({ where: { id } });
   if (!updated) return null;
+
+  if (input.amount != null) {
+    await recalculateAllocationsForRevenue(userId, id, updated.amount);
+  }
 
   return {
     id: updated.id,

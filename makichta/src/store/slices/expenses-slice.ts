@@ -5,6 +5,7 @@ export interface ExpenseCategory {
   label: string;
   type: "FIXED" | "VARIABLE";
   monthlyBudget: number;
+  budgetPercent: number | null;
 }
 
 export interface Expense {
@@ -13,6 +14,7 @@ export interface Expense {
   amount: number;
   date: string;
   description: string;
+  categoryLabel?: string;
 }
 
 interface ExpensesState {
@@ -54,6 +56,12 @@ export const expensesSlice = createSlice({
     addExpense(state, action: PayloadAction<Expense>) {
       state.expenses.push(action.payload);
     },
+    updateExpense(state, action: PayloadAction<Expense>) {
+      const index = state.expenses.findIndex(
+        (e) => e.id === action.payload.id
+      );
+      if (index !== -1) state.expenses[index] = action.payload;
+    },
     removeExpense(state, action: PayloadAction<string>) {
       state.expenses = state.expenses.filter((e) => e.id !== action.payload);
     },
@@ -70,6 +78,7 @@ export const {
   removeCategory,
   setExpenses,
   addExpense,
+  updateExpense,
   removeExpense,
   setLoading,
 } = expensesSlice.actions;
