@@ -36,11 +36,11 @@ export function InvestmentList({ onInvestmentChange }: InvestmentListProps) {
     deleteInvestment,
   } = useInvestments();
   const { convertAndFormat } = useCurrency();
-  const [typeFilter, setTypeFilter] = useState<string>("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
-    fetchInvestments(typeFilter || undefined);
+    fetchInvestments(typeFilter === "all" ? undefined : typeFilter);
   }, [fetchInvestments, typeFilter]);
 
   const handleCreate = async (data: {
@@ -75,7 +75,7 @@ export function InvestmentList({ onInvestmentChange }: InvestmentListProps) {
               <SelectValue placeholder="Tous les types" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tous les types</SelectItem>
+              <SelectItem value="all">Tous les types</SelectItem>
               {INVESTMENT_TYPES.map((t) => (
                 <SelectItem key={t} value={t}>
                   {INVESTMENT_TYPE_LABELS[t]}

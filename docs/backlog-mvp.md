@@ -90,12 +90,12 @@
 
 ### Dashboard consolidé
 
-- [ ] Vue mensuelle : revenus, dépenses totales, épargne réalisée, investissements du mois
-- [ ] Vue annuelle : historique mois par mois
-- [ ] Graphique camembert : répartition des dépenses par catégorie
-- [ ] Graphique courbe : évolution de l'épargne dans le temps
-- [ ] Graphique barres : suivi des objectifs d'épargne (atteint vs cible)
-- [ ] Indicateurs clés : taux d'épargne, reste à vivre, écart budget
+- [x] Vue mensuelle : revenus, dépenses totales, épargne réalisée, investissements du mois
+- [x] Vue annuelle : historique mois par mois
+- [x] Graphique camembert : répartition des dépenses par catégorie
+- [x] Graphique courbe : évolution de l'épargne dans le temps
+- [x] Graphique barres : suivi des objectifs d'épargne (atteint vs cible)
+- [x] Indicateurs clés : taux d'épargne, reste à vivre, écart budget
 
 ### Paramétrage et personnalisation
 
