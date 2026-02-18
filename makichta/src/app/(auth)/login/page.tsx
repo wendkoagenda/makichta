@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Wallet } from "lucide-react";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -101,5 +101,32 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <Wallet className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle className="text-2xl">Ma Kichta</CardTitle>
+              <CardDescription>Connexion à votre espace</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-center text-sm text-muted-foreground">
+                Chargement...
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

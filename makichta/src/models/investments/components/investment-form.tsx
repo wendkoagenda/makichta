@@ -25,7 +25,7 @@ interface InvestmentFormProps {
 
 export function InvestmentForm({ onSubmit, onCancel }: InvestmentFormProps) {
   const today = new Date().toISOString().slice(0, 10);
-  const [type, setType] = useState(INVESTMENT_TYPES[0]);
+  const [type, setType] = useState<string>(INVESTMENT_TYPES[0]);
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(today);
   const [description, setDescription] = useState("");

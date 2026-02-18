@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useSavingGoals } from "../hooks/use-saving-goals";
+import type { SavingGoal } from "../types/saving-goal";
 import { SavingGoalForm } from "./saving-goal-form";
 import { SavingGoalCard } from "./saving-goal-card";
 import { Plus } from "lucide-react";
@@ -76,7 +77,7 @@ export function SavingGoalList() {
           </p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
-            {goals.map((goal) => (
+            {goals.map((goal: SavingGoal) => (
               <SavingGoalCard
                 key={goal.id}
                 goal={goal}
@@ -84,7 +85,9 @@ export function SavingGoalList() {
                   const ok = await updateGoal(id, data);
                   return !!ok;
                 }}
-                onDelete={deleteGoal}
+                onDelete={async (id) => {
+                  await deleteGoal(id);
+                }}
                 onContribution={fetchGoals}
               />
             ))}

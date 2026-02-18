@@ -206,7 +206,7 @@ function MonthlyView(props: {
                         return (
                           entry.name +
                           " " +
-                          (entry.percent * 100).toFixed(0) +
+                          ((entry.percent ?? 0) * 100).toFixed(0) +
                           "%"
                         );
                       }}
@@ -221,8 +221,8 @@ function MonthlyView(props: {
                       })}
                     </Pie>
                     <Tooltip
-                      formatter={function (v: number) {
-                        return convertAndFormat(v);
+                      formatter={function (v: number | undefined) {
+                        return convertAndFormat(v ?? 0);
                       }}
                     />
                   </PieChart>
@@ -261,9 +261,9 @@ function MonthlyView(props: {
                     tick={{ fontSize: 12 }}
                   />
                   <Tooltip
-                    formatter={function (v: number) {
-                      return v.toFixed(0) + " %";
-                    }}
+formatter={function (v: number | undefined) {
+                    return (v ?? 0).toFixed(0) + " %";
+                  }}
                     labelFormatter={function (l) {
                       return String(l);
                     }}
@@ -333,8 +333,8 @@ function AnnualView(props: {
                   }}
                 />
                 <Tooltip
-                  formatter={function (v: number) {
-                    return convertAndFormat(v);
+                  formatter={function (v: number | undefined) {
+                    return convertAndFormat(v ?? 0);
                   }}
                 />
                 <Bar dataKey="revenues" fill="#d4af37" name="Revenus" />
@@ -361,8 +361,8 @@ function AnnualView(props: {
                   }}
                 />
                 <Tooltip
-                  formatter={function (v: number) {
-                    return convertAndFormat(v);
+                  formatter={function (v: number | undefined) {
+                    return convertAndFormat(v ?? 0);
                   }}
                 />
                 <Line
@@ -423,14 +423,14 @@ export default function DashboardPage() {
           return r.ok ? r.json() : [];
         })
         .then(function (d) {
-          var arr = Array.isArray(d) ? d : [];
+          const arr = Array.isArray(d) ? d : [];
           return arr.map(function (row: {
             month: string;
             revenues: number;
             expenses: number;
             savings: number;
           }) {
-            var key = row.month ? row.month.slice(5, 7) : "";
+            const key = row.month ? row.month.slice(5, 7) : "";
             return {
               month: row.month,
               monthLabel: MONTH_LABELS[key] || key,
@@ -448,13 +448,13 @@ export default function DashboardPage() {
     [showAnnual, year]
   );
 
-  var ml = "";
+  let ml = "";
   if (month) {
-    var k = month.slice(5, 7);
+    const k = month.slice(5, 7);
     ml = (MONTH_LABELS[k] || "") + " " + month.slice(0, 4);
   }
 
-  var monthOptions = buildMonthOptions();
+  const monthOptions = buildMonthOptions();
 
   return (
     <div className="space-y-8">
