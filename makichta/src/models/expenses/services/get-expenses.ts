@@ -8,24 +8,19 @@ export interface ExpenseWithCategory extends Expense {
 interface GetExpensesParams {
   userId: string;
   categoryId?: string;
-  month?: string;
+  monthId?: string;
 }
 
 export async function getExpenses({
   userId,
   categoryId,
-  month,
+  monthId,
 }: GetExpensesParams): Promise<ExpenseWithCategory[]> {
-  const where: { userId: string; categoryId?: string; date?: { gte: Date; lt: Date } } = {
+  const where: { userId: string; categoryId?: string; monthId?: string } = {
     userId,
   };
   if (categoryId) where.categoryId = categoryId;
-  if (month) {
-    const [y, m] = month.split("-").map(Number);
-    const start = new Date(y, m - 1, 1);
-    const end = new Date(y, m, 1);
-    where.date = { gte: start, lt: end };
-  }
+  if (monthId) where.monthId = monthId;
 
   const rows = await prisma.expense.findMany({
     where,

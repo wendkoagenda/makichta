@@ -3,9 +3,15 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MonthPicker } from "@/components/ui/month-picker";
 import { useAllocationRules } from "../hooks/use-allocation-rules";
 import { AllocationRuleForm } from "./allocation-rule-form";
 import { Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
+
+function getCurrentMonthId(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
 
 export function AllocationRuleList() {
   const {
@@ -17,6 +23,7 @@ export function AllocationRuleList() {
     deleteRule,
     seedDefaults,
   } = useAllocationRules();
+  const [monthId, setMonthId] = useState(getCurrentMonthId);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
@@ -26,8 +33,9 @@ export function AllocationRuleList() {
   const handleCreate = async (data: {
     label: string;
     percentage: number;
+    expenseCategoryIds?: string[];
   }) => {
-    const result = await createRule(data);
+    const result = await createRule({ ...data, monthId });
     if (result) {
       setShowAddForm(false);
       return true;
@@ -37,7 +45,7 @@ export function AllocationRuleList() {
 
   const handleUpdate = async (
     id: string,
-    data: { label: string; percentage: number }
+    data: { label: string; percentage: number; expenseCategoryIds?: string[] }
   ) => {
     const result = await updateRule(id, data);
     if (result) {
@@ -61,7 +69,7 @@ export function AllocationRuleList() {
   const handleSeedDefaults = async () => {
     setIsSeeding(true);
     try {
-      const result = await seedDefaults();
+      const result = await seedDefaults(monthId);
       if (result && result.length > 0) {
         setShowAddForm(false);
       }
@@ -71,8 +79,8 @@ export function AllocationRuleList() {
   };
 
   useEffect(() => {
-    fetchRules();
-  }, [fetchRules]);
+    fetchRules(monthId);
+  }, [monthId, fetchRules]);
 
   return (
     <Card>
@@ -105,10 +113,18 @@ export function AllocationRuleList() {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex flex-wrap items-end gap-4">
+          <MonthPicker
+            label="Mois"
+            value={monthId}
+            onValueChange={(v) => setMonthId(v)}
+          />
+        </div>
         {showAddForm && (
           <div className="rounded-lg border border-border p-4">
             <h4 className="mb-3 text-sm font-medium">Nouvelle règle</h4>
             <AllocationRuleForm
+              monthId={monthId}
               onSubmit={handleCreate}
               onCancel={() => setShowAddForm(false)}
             />
@@ -144,6 +160,7 @@ export function AllocationRuleList() {
                   {editingId === r.id ? (
                     <div className="flex-1">
                       <AllocationRuleForm
+                        monthId={monthId}
                         rule={r}
                         onSubmit={async (data) => handleUpdate(r.id, data)}
                         onCancel={() => setEditingId(null)}
@@ -155,6 +172,12 @@ export function AllocationRuleList() {
                         <p className="font-medium">{r.label}</p>
                         <p className="text-xs text-muted-foreground">
                           {r.percentage} % des revenus
+                          {r.categories && r.categories.length > 0 && (
+                            <>
+                              {" · "}
+                              Lié à : {r.categories.map((c) => c.label).join(", ")}
+                            </>
+                          )}
                         </p>
                       </div>
                       <div className="flex gap-1">

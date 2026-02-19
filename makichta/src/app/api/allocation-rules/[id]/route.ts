@@ -20,12 +20,21 @@ export async function PUT(
 
   try {
     const body = await _request.json();
-    const { label, percentage } = body;
+    const { label, percentage, expenseCategoryIds } = body;
 
-    const updates: { label?: string; percentage?: number } = {};
+    const updates: {
+      label?: string;
+      percentage?: number;
+      expenseCategoryIds?: string[];
+    } = {};
     if (label != null) updates.label = String(label).trim();
     if (percentage != null && !isNaN(Number(percentage))) {
       updates.percentage = Math.min(100, Math.max(0, Number(percentage)));
+    }
+    if (expenseCategoryIds !== undefined) {
+      updates.expenseCategoryIds = Array.isArray(expenseCategoryIds)
+        ? expenseCategoryIds.filter((id: unknown) => typeof id === "string")
+        : [];
     }
 
     const rule = await updateAllocationRule(session.user.id, id, updates);

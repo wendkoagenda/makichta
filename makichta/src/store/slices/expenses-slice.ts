@@ -6,6 +6,8 @@ export interface ExpenseCategory {
   type: "FIXED" | "VARIABLE";
   monthlyBudget: number;
   budgetPercent: number | null;
+  monthId: string;
+  allocationRules?: { id: string; label: string }[];
 }
 
 export interface Expense {

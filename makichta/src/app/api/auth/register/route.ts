@@ -44,8 +44,9 @@ export async function POST(request: Request) {
       },
     });
 
-    await seedDefaultExpenseCategories(user.id);
-    await seedDefaultAllocationRules(user.id);
+    const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+    await seedDefaultExpenseCategories(user.id, currentMonth);
+    await seedDefaultAllocationRules(user.id, currentMonth);
 
     return NextResponse.json({
       id: user.id,

@@ -48,7 +48,7 @@ export function RevenueList() {
   } = useRevenues();
   const { convertAndFormat } = useCurrency();
 
-  const [month, setMonth] = useState(() => {
+  const [monthId, setMonthId] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   });
@@ -58,7 +58,7 @@ export function RevenueList() {
   const loadData = () => {
     fetchSources();
     fetchRevenues({
-      month,
+      monthId,
       sourceId: sourceFilter === "all" ? undefined : sourceFilter,
     });
   };
@@ -116,11 +116,11 @@ export function RevenueList() {
           <div className="space-y-1">
             <label className="text-sm font-medium">Mois</label>
             <Select
-              value={month}
+              value={monthId}
               onValueChange={(v) => {
-                setMonth(v);
+                setMonthId(v);
                 fetchRevenues({
-                  month: v,
+                  monthId: v,
                   sourceId: sourceFilter === "all" ? undefined : sourceFilter,
                 });
               }}
@@ -144,7 +144,7 @@ export function RevenueList() {
               onValueChange={(v) => {
                 setSourceFilter(v);
                 fetchRevenues({
-                  month,
+                  monthId,
                   sourceId: v === "all" ? undefined : v,
                 });
               }}

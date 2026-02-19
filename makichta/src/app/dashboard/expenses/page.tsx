@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { ExpenseCategoryList } from "@/models/expense-categories/components/expense-category-list";
 import { ExpenseList } from "@/models/expenses/components/expense-list";
 import { ExpenseBudgetSummary } from "@/models/expenses/components/expense-budget-summary";
 
@@ -19,9 +18,6 @@ export default function ExpensesPage() {
 
       <ExpenseBudgetSummary refreshKey={summaryRefreshKey} />
       <ExpenseList onExpenseChange={() => setSummaryRefreshKey((k) => k + 1)} />
-      <ExpenseCategoryList
-        onCategoryChange={() => setSummaryRefreshKey((k) => k + 1)}
-      />
     </div>
   );
 }

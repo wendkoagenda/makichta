@@ -35,5 +35,6 @@ export async function updateExpenseCategory(
     type: updated.type as "FIXED" | "VARIABLE",
     monthlyBudget: updated.monthlyBudget,
     budgetPercent: updated.budgetPercent,
+    monthId: (updated as { monthId: string }).monthId,
   };
 }

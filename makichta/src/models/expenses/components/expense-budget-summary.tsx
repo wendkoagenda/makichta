@@ -23,6 +23,7 @@ interface CategorySummary {
   spent: number;
   isOverBudget: boolean;
   remaining: number;
+  allocationRules?: { id: string; label: string }[];
 }
 
 interface PlannedExpenseForMonth {
@@ -47,8 +48,8 @@ interface ExpenseBudgetSummaryProps {
 }
 
 export function ExpenseBudgetSummary({ refreshKey = 0 }: ExpenseBudgetSummaryProps) {
-  const currentMonth = getCurrentMonth();
-  const [month, setMonth] = useState(currentMonth);
+  const currentMonthId = getCurrentMonth();
+  const [monthId, setMonthId] = useState(currentMonthId);
   const [summary, setSummary] = useState<ExpenseSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { convertAndFormat } = useCurrency();
@@ -56,7 +57,7 @@ export function ExpenseBudgetSummary({ refreshKey = 0 }: ExpenseBudgetSummaryPro
   const fetchSummary = useCallback(async (m: string) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/expenses/summary?month=${m}`);
+      const res = await fetch(`/api/expenses/summary?monthId=${encodeURIComponent(m)}`);
       if (!res.ok) throw new Error("Erreur réseau");
       const data: ExpenseSummary = await res.json();
       setSummary(data);
@@ -68,19 +69,19 @@ export function ExpenseBudgetSummary({ refreshKey = 0 }: ExpenseBudgetSummaryPro
   }, []);
 
   useEffect(() => {
-    fetchSummary(month);
-  }, [month, fetchSummary, refreshKey]);
+    fetchSummary(monthId);
+  }, [monthId, fetchSummary, refreshKey]);
 
   const overBudgetCategories = summary?.categories.filter((c) => c.isOverBudget) ?? [];
-  const monthLabel = month ? `${MONTH_LABELS[month.slice(5, 7)] ?? ""} ${month.slice(0, 4)}` : "";
+  const monthLabel = monthId ? `${MONTH_LABELS[monthId.slice(5, 7)] ?? ""} ${monthId.slice(0, 4)}` : "";
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle>Résumé budget vs réel</CardTitle>
         <select
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
+          value={monthId}
+          onChange={(e) => setMonthId(e.target.value)}
           className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
         >
           {(() => {
@@ -163,15 +164,29 @@ export function ExpenseBudgetSummary({ refreshKey = 0 }: ExpenseBudgetSummaryPro
                         : "border-border"
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      {cat.isOverBudget ? (
-                        <AlertTriangle className="h-4 w-4 text-destructive" />
-                      ) : (
-                        <CheckCircle2 className="h-4 w-4 text-primary/70" />
+                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                      <div className="flex items-center gap-2">
+                        {cat.isOverBudget ? (
+                          <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+                        ) : (
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-primary/70" />
+                        )}
+                        <span className="font-medium">{cat.categoryLabel}</span>
+                      </div>
+                      {cat.allocationRules && cat.allocationRules.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pl-6">
+                          {cat.allocationRules.map((r) => (
+                            <span
+                              key={r.id}
+                              className="inline-flex items-center rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary"
+                            >
+                              {r.label}
+                            </span>
+                          ))}
+                        </div>
                       )}
-                      <span className="font-medium">{cat.categoryLabel}</span>
                     </div>
-                    <div className="text-right text-sm">
+                    <div className="shrink-0 text-right text-sm">
                       <span className="text-muted-foreground">
                         {convertAndFormat(cat.spent)}
                       </span>

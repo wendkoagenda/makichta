@@ -17,19 +17,25 @@ export function useAllocationRules() {
   const rules = useAppSelector((state) => state.allocations.rules);
   const isLoading = useAppSelector((state) => state.allocations.isLoading);
 
-  const fetchRules = useCallback(async () => {
-    dispatch(setLoading(true));
-    try {
-      const res = await fetch("/api/allocation-rules");
-      if (!res.ok) throw new Error("Erreur réseau");
-      const data: AllocationRule[] = await res.json();
-      dispatch(setRules(data));
-    } catch {
-      dispatch(setRules([]));
-    } finally {
-      dispatch(setLoading(false));
-    }
-  }, [dispatch]);
+  const fetchRules = useCallback(
+    async (monthId: string) => {
+      dispatch(setLoading(true));
+      try {
+        const url = monthId
+          ? `/api/allocation-rules?monthId=${encodeURIComponent(monthId)}`
+          : "/api/allocation-rules";
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Erreur réseau");
+        const data: AllocationRule[] = await res.json();
+        dispatch(setRules(data));
+      } catch {
+        dispatch(setRules([]));
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
 
   const createRule = useCallback(
     async (input: CreateAllocationRuleInput): Promise<AllocationRule | null> => {
@@ -76,15 +82,20 @@ export function useAllocationRules() {
     [dispatch]
   );
 
-  const seedDefaults = useCallback(async (): Promise<AllocationRule[] | null> => {
-    const res = await fetch("/api/allocation-rules/seed", {
-      method: "POST",
-    });
-    if (!res.ok) return null;
-    const data: AllocationRule[] = await res.json();
-    if (data.length > 0) dispatch(setRules(data));
-    return data;
-  }, [dispatch]);
+  const seedDefaults = useCallback(
+    async (monthId: string): Promise<AllocationRule[] | null> => {
+      const res = await fetch("/api/allocation-rules/seed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ monthId: monthId || undefined }),
+      });
+      if (!res.ok) return null;
+      const data: AllocationRule[] = await res.json();
+      if (data.length > 0) dispatch(setRules(data));
+      return data;
+    },
+    [dispatch]
+  );
 
   return {
     rules,

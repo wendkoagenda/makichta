@@ -41,8 +41,8 @@ export function ExpenseList({ onExpenseChange }: ExpenseListProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    fetchCategories(currentMonth);
+  }, [currentMonth, fetchCategories]);
 
   useEffect(() => {
     fetchExpenses();

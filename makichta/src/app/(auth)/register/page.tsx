@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -13,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Wallet } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -63,10 +63,17 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Wallet className="h-6 w-6 text-primary" />
+          <div className="mx-auto mb-4 flex justify-center">
+            <Image
+              src="/logo_mk-no-bg.png"
+              alt="Ma Kichta"
+              width={180}
+              height={56}
+              className="h-14 w-auto object-contain"
+              priority
+            />
           </div>
-          <CardTitle className="text-2xl">Ma Kichta</CardTitle>
+          <CardTitle className="sr-only">Ma Kichta</CardTitle>
           <CardDescription>Créer un compte</CardDescription>
         </CardHeader>
         <CardContent>

@@ -7,6 +7,7 @@ export interface CategorySummary {
   spent: number;
   isOverBudget: boolean;
   remaining: number;
+  allocationRules?: { id: string; label: string }[];
 }
 
 export interface PlannedExpenseForMonth {
@@ -28,28 +29,34 @@ export interface ExpenseSummary {
 
 export async function getExpenseSummary(
   userId: string,
-  month: string
+  monthId: string
 ): Promise<ExpenseSummary> {
-  const [year, m] = month.split("-").map(Number);
+  const [year, m] = monthId.split("-").map(Number);
   const start = new Date(year, m - 1, 1);
   const end = new Date(year, m, 1);
 
-  const [categories, expenses, revenues, plannedExpenses] = await Promise.all([
-    prisma.expenseCategory.findMany({
-      where: { userId },
-      orderBy: { label: "asc" },
-    }),
+  interface CategoryRowWithRules {
+    id: string;
+    label: string;
+    monthlyBudget: number;
+    budgetPercent: number | null;
+    allocationRules: { id: string; label: string }[];
+  }
+
+  const categories = (await prisma.expenseCategory.findMany({
+    where: { userId, monthId },
+    orderBy: { label: "asc" },
+    include: {
+      allocationRules: { select: { id: true, label: true } },
+    },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- include allocationRules
+  } as any)) as unknown as CategoryRowWithRules[];
+  const [expenses, revenues, plannedExpenses] = await Promise.all([
     prisma.expense.findMany({
-      where: {
-        userId,
-        date: { gte: start, lt: end },
-      },
+      where: { userId, monthId },
     }),
     prisma.revenue.findMany({
-      where: {
-        userId,
-        date: { gte: start, lt: end },
-      },
+      where: { userId, monthId },
     }),
     prisma.plannedExpense.findMany({
       where: {
@@ -96,11 +103,12 @@ export async function getExpenseSummary(
       spent,
       isOverBudget: spent > budget,
       remaining,
+      allocationRules: c.allocationRules,
     };
   });
 
   return {
-    month,
+    month: monthId,
     totalRevenues,
     totalExpenses,
     totalPlannedExpenses,

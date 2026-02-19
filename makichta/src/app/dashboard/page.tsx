@@ -2,8 +2,19 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useCurrency } from "@/models/settings/hooks/use-currency";
-import { Wallet, CreditCard, PiggyBank, TrendingUp } from "lucide-react";
+import { useDuplicateMonth } from "@/models/months/hooks/use-duplicate-month";
+import { Wallet, CreditCard, PiggyBank, TrendingUp, Copy } from "lucide-react";
 import {
   PieChart,
   Pie,
@@ -43,7 +54,13 @@ interface MonthlyData {
   totalInvestments: number;
   savingsRate: number;
   remainingToLive: number;
-  expenseByCategory: { label: string; amount: number; percent: number }[];
+  expenseByCategory: {
+    categoryId: string;
+    label: string;
+    amount: number;
+    percent: number;
+    allocated?: number;
+  }[];
   goalsProgress: {
     label: string;
     current: number;
@@ -77,14 +94,30 @@ function buildMonthOptions(): string[] {
   return opts;
 }
 
+function getNextMonth(month: string): string {
+  const [y, m] = month.split("-").map(Number);
+  if (m === 12) return `${y + 1}-01`;
+  return `${y}-${String(m + 1).padStart(2, "0")}`;
+}
+
+function formatMonthLabel(month: string): string {
+  const k = month.slice(5, 7);
+  return (MONTH_LABELS[k] || k) + " " + month.slice(0, 4);
+}
+
 function MonthlyView(props: {
   data: MonthlyData | null;
   monthLabel: string;
   convertAndFormat: (v: number) => string;
 }) {
   const { data, monthLabel, convertAndFormat } = props;
-  const pieData = (data?.expenseByCategory ?? []).map(function (c) {
-    return { name: c.label, value: c.amount };
+  const expenseByCategory = data?.expenseByCategory ?? [];
+  const pieData = expenseByCategory.map(function (c) {
+    return {
+      name: c.label,
+      value: c.amount,
+      percent: c.percent,
+    };
   });
 
   return (
@@ -202,11 +235,14 @@ function MonthlyView(props: {
                       paddingAngle={2}
                       dataKey="value"
                       nameKey="name"
-                      label={function (entry) {
+                      label={function (props: {
+                        payload?: { name?: string; percent?: number };
+                      }) {
+                        const p = props.payload;
                         return (
-                          entry.name +
+                          (p?.name ?? "") +
                           " " +
-                          ((entry.percent ?? 0) * 100).toFixed(0) +
+                          ((p?.percent ?? 0) * 100).toFixed(0) +
                           "%"
                         );
                       }}
@@ -228,6 +264,39 @@ function MonthlyView(props: {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {expenseByCategory.some((c) => c.allocated != null && c.allocated > 0) && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">
+                Alloué vs dépensé par catégorie
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {expenseByCategory
+                  .filter((c) => c.allocated != null && c.allocated > 0)
+                  .map((c) => (
+                    <li
+                      key={c.categoryId}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-2 text-sm"
+                    >
+                      <span className="font-medium">{c.label}</span>
+                      <span className="flex gap-3 text-muted-foreground">
+                        <span>
+                          Alloué : {convertAndFormat(c.allocated ?? 0)}
+                        </span>
+                        <span>Dépensé : {convertAndFormat(c.amount)}</span>
+                        {(c.allocated ?? 0) > 0 && c.amount > (c.allocated ?? 0) && (
+                          <span className="text-destructive">Dépassement</span>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+              </ul>
             </CardContent>
           </Card>
         )}
@@ -384,18 +453,21 @@ function AnnualView(props: {
 
 export default function DashboardPage() {
   const { convertAndFormat } = useCurrency();
-  const [month, setMonth] = useState(getCurrentMonth());
+  const { duplicate, isLoading: isDuplicating, error: duplicateError } = useDuplicateMonth();
+  const [monthId, setMonthId] = useState(getCurrentMonth());
   const [year, setYear] = useState(new Date().getFullYear());
   const [data, setData] = useState<MonthlyData | null>(null);
   const [annualData, setAnnualData] = useState<AnnualRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAnnual, setShowAnnual] = useState(false);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  const [includeRevenues, setIncludeRevenues] = useState(false);
 
   const fetchData = useCallback(
     async function (m: string) {
       setIsLoading(true);
       try {
-        const res = await fetch("/api/dashboard/monthly?month=" + m);
+        const res = await fetch("/api/dashboard/monthly?month=" + encodeURIComponent(m));
         if (!res.ok) throw new Error("Erreur");
         const d = await res.json();
         setData(d);
@@ -410,9 +482,9 @@ export default function DashboardPage() {
 
   useEffect(
     function () {
-      fetchData(month);
+      fetchData(monthId);
     },
-    [month, fetchData]
+    [monthId, fetchData]
   );
 
   useEffect(
@@ -449,9 +521,9 @@ export default function DashboardPage() {
   );
 
   let ml = "";
-  if (month) {
-    const k = month.slice(5, 7);
-    ml = (MONTH_LABELS[k] || "") + " " + month.slice(0, 4);
+  if (monthId) {
+    const k = monthId.slice(5, 7);
+    ml = (MONTH_LABELS[k] || "") + " " + monthId.slice(0, 4);
   }
 
   const monthOptions = buildMonthOptions();
@@ -467,11 +539,11 @@ export default function DashboardPage() {
             {"Vue d'ensemble de vos finances"}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <select
-            value={month}
+            value={monthId}
             onChange={function (e) {
-              setMonth(e.target.value);
+              setMonthId(e.target.value);
             }}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
@@ -483,6 +555,16 @@ export default function DashboardPage() {
               );
             })}
           </select>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setDuplicateDialogOpen(true)}
+            className="gap-1"
+          >
+            <Copy className="h-4 w-4" />
+            Dupliquer vers le mois suivant
+          </Button>
           <button
             type="button"
             onClick={function () {
@@ -494,6 +576,67 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
+
+      <Dialog open={duplicateDialogOpen} onOpenChange={setDuplicateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Dupliquer vers le mois suivant</DialogTitle>
+            <DialogDescription>
+              Copie les règles de répartition et les catégories de dépenses du mois
+              affiché vers le mois suivant. Vous pouvez optionnellement inclure les
+              revenus.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Mois source</Label>
+              <p className="text-sm text-muted-foreground">
+                {formatMonthLabel(monthId)}
+              </p>
+            </div>
+            <div className="grid gap-2">
+              <Label>Mois cible</Label>
+              <p className="text-sm text-muted-foreground">
+                {formatMonthLabel(getNextMonth(monthId))}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="include-revenues"
+                checked={includeRevenues}
+                onChange={(e) => setIncludeRevenues(e.target.checked)}
+                className="h-4 w-4 rounded border-input"
+              />
+              <Label htmlFor="include-revenues">Inclure les revenus</Label>
+            </div>
+            {duplicateError && (
+              <p className="text-sm text-destructive">{duplicateError}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDuplicateDialogOpen(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              disabled={isDuplicating}
+              onClick={async () => {
+                const targetMonthId = getNextMonth(monthId);
+                const result = await duplicate(monthId, targetMonthId, includeRevenues);
+                if (result) {
+                  setDuplicateDialogOpen(false);
+                  setMonthId(targetMonthId);
+                }
+              }}
+            >
+              {isDuplicating ? "Duplication…" : "Dupliquer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {showAnnual ? (
         <AnnualView

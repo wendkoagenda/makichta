@@ -17,19 +17,25 @@ export function useExpenseCategories() {
   const categories = useAppSelector((state) => state.expenses.categories);
   const isLoading = useAppSelector((state) => state.expenses.isLoading);
 
-  const fetchCategories = useCallback(async () => {
-    dispatch(setLoading(true));
-    try {
-      const res = await fetch("/api/expense-categories");
-      if (!res.ok) throw new Error("Erreur réseau");
-      const data: ExpenseCategory[] = await res.json();
-      dispatch(setCategories(data));
-    } catch {
-      dispatch(setCategories([]));
-    } finally {
-      dispatch(setLoading(false));
-    }
-  }, [dispatch]);
+  const fetchCategories = useCallback(
+    async (monthId: string) => {
+      dispatch(setLoading(true));
+      try {
+        const url = monthId
+          ? `/api/expense-categories?monthId=${encodeURIComponent(monthId)}`
+          : "/api/expense-categories";
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Erreur réseau");
+        const data: ExpenseCategory[] = await res.json();
+        dispatch(setCategories(data));
+      } catch {
+        dispatch(setCategories([]));
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
 
   const createCategory = useCallback(
     async (input: CreateExpenseCategoryInput): Promise<ExpenseCategory | null> => {
@@ -76,15 +82,20 @@ export function useExpenseCategories() {
     [dispatch]
   );
 
-  const seedDefaults = useCallback(async (): Promise<ExpenseCategory[] | null> => {
-    const res = await fetch("/api/expense-categories/seed", {
-      method: "POST",
-    });
-    if (!res.ok) return null;
-    const data: ExpenseCategory[] = await res.json();
-    dispatch(setCategories(data));
-    return data;
-  }, [dispatch]);
+  const seedDefaults = useCallback(
+    async (monthId: string): Promise<ExpenseCategory[] | null> => {
+      const res = await fetch("/api/expense-categories/seed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ monthId: monthId || undefined }),
+      });
+      if (!res.ok) return null;
+      const data: ExpenseCategory[] = await res.json();
+      dispatch(setCategories(data));
+      return data;
+    },
+    [dispatch]
+  );
 
   return {
     categories,

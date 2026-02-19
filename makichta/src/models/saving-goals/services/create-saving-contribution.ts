@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getMonthIdFromDate } from "@/models/months/services/get-months";
 import type {
   CreateSavingContributionInput,
   SavingContribution,
@@ -13,12 +14,16 @@ export async function createSavingContribution(
   });
   if (!goal) return null;
 
+  const date = new Date(input.date);
+  const monthId = getMonthIdFromDate(date);
+
   const [contribution] = await prisma.$transaction([
     prisma.savingContribution.create({
       data: {
         savingGoalId: input.savingGoalId,
+        monthId,
         amount: Math.max(0, input.amount),
-        date: new Date(input.date),
+        date,
         isAutomatic: input.isAutomatic ?? false,
       },
     }),

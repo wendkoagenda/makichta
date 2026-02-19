@@ -14,7 +14,7 @@ import type { CreateRevenueInput } from "../types/revenue";
 
 interface UseRevenuesOptions {
   sourceId?: string;
-  month?: string; // YYYY-MM
+  monthId?: string; // YYYY-MM
 }
 
 export function useRevenues(options: UseRevenuesOptions = {}) {
@@ -23,14 +23,14 @@ export function useRevenues(options: UseRevenuesOptions = {}) {
   const isLoading = useAppSelector((state) => state.revenues.isLoading);
 
   const fetchRevenues = useCallback(
-    async (overrides?: { sourceId?: string; month?: string }) => {
+    async (overrides?: { sourceId?: string; monthId?: string }) => {
       dispatch(setLoading(true));
       try {
         const params = new URLSearchParams();
         const srcId = overrides?.sourceId ?? options.sourceId;
-        const m = overrides?.month ?? options.month;
+        const m = overrides?.monthId ?? options.monthId;
         if (srcId) params.set("sourceId", srcId);
-        if (m) params.set("month", m);
+        if (m) params.set("monthId", m);
         const url = `/api/revenues${params.toString() ? `?${params}` : ""}`;
         const res = await fetch(url);
         if (!res.ok) throw new Error("Erreur réseau");
@@ -42,7 +42,7 @@ export function useRevenues(options: UseRevenuesOptions = {}) {
         dispatch(setLoading(false));
       }
     },
-    [dispatch, options.sourceId, options.month]
+    [dispatch, options.sourceId, options.monthId]
   );
 
   const createRevenue = useCallback(

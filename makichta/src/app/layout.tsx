@@ -11,6 +11,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Ma Kichta",
   description: "Application de gestion des finances personnelles",
+  icons: {
+    icon: "/logo_mk-no-bg.png",
+    apple: "/logo_mk-no-bg.png",
+  },
 };
 
 export default function RootLayout({

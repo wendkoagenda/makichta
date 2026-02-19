@@ -92,7 +92,7 @@ export function RevenueListCard({
   const loadData = () => {
     fetchSources();
     fetchRevenues({
-      month: monthFilter === "all" ? undefined : monthFilter,
+      monthId: monthFilter === "all" ? undefined : monthFilter,
       sourceId: sourceFilter === "all" ? undefined : sourceFilter,
     });
   };

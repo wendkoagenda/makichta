@@ -7,6 +7,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Month {
+  id    String @id
+  label String
+  year  Int
+  month Int
+
+  allocationRules     AllocationRule[]
+  expenseCategories   ExpenseCategory[]
+  revenues            Revenue[]
+  expenses            Expense[]
+  allocations         Allocation[]
+  savingContributions SavingContribution[]
+
+  @@unique([year, month])
+}
+
 model User {
   id              String   @id @default(cuid())
   email           String   @unique
@@ -48,6 +64,7 @@ model Revenue {
   id          String   @id @default(cuid())
   userId      String
   sourceId    String
+  monthId     String
   amount      Float
   date        DateTime
   description String   @default("")
@@ -55,10 +72,12 @@ model Revenue {
 
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   source      RevenueSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  monthRef    Month         @relation(fields: [monthId], references: [id], onDelete: Restrict)
   allocations Allocation[]
 
   @@index([userId])
   @@index([sourceId])
+  @@index([monthId])
 }
 
 model AllocationRule {
@@ -66,49 +85,61 @@ model AllocationRule {
   userId     String
   label      String
   percentage Float
+  monthId    String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  monthRef    Month             @relation(fields: [monthId], references: [id], onDelete: Restrict)
   allocations Allocation[]
+  categories  ExpenseCategory[]
 
   @@index([userId])
+  @@index([userId, monthId])
 }
 
 model Allocation {
   id        String   @id @default(cuid())
   revenueId String
   ruleId    String
+  monthId   String
   amount    Float
   createdAt DateTime @default(now())
 
-  revenue Revenue        @relation(fields: [revenueId], references: [id], onDelete: Cascade)
-  rule    AllocationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  revenue  Revenue        @relation(fields: [revenueId], references: [id], onDelete: Cascade)
+  rule     AllocationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  monthRef Month          @relation(fields: [monthId], references: [id], onDelete: Restrict)
 
   @@index([revenueId])
   @@index([ruleId])
+  @@index([monthId])
 }
 
 model ExpenseCategory {
-  id            String   @id @default(cuid())
-  userId        String
-  label         String
-  type          String
-  monthlyBudget Float    @default(0)
-  budgetPercent Float?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String          @id @default(cuid())
+  userId          String
+  label           String
+  type            String
+  monthlyBudget   Float           @default(0)
+  budgetPercent   Float?
+  monthId         String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  expenses Expense[]
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  monthRef        Month           @relation(fields: [monthId], references: [id], onDelete: Restrict)
+  expenses        Expense[]
+  allocationRules AllocationRule[]
 
   @@index([userId])
+  @@index([userId, monthId])
 }
 
 model Expense {
   id          String   @id @default(cuid())
   userId      String
   categoryId  String
+  monthId     String
   amount      Float
   date        DateTime
   description String   @default("")
@@ -116,9 +147,11 @@ model Expense {
 
   user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   category ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  monthRef Month            @relation(fields: [monthId], references: [id], onDelete: Restrict)
 
   @@index([userId])
   @@index([categoryId])
+  @@index([monthId])
 }
 
 model SavingGoal {
@@ -142,14 +175,17 @@ model SavingGoal {
 model SavingContribution {
   id           String   @id @default(cuid())
   savingGoalId String
+  monthId      String
   amount       Float
   date         DateTime
   isAutomatic  Boolean  @default(false)
   createdAt    DateTime @default(now())
 
   savingGoal SavingGoal @relation(fields: [savingGoalId], references: [id], onDelete: Cascade)
+  monthRef   Month      @relation(fields: [monthId], references: [id], onDelete: Restrict)
 
   @@index([savingGoalId])
+  @@index([monthId])
 }
 
 model Investment {

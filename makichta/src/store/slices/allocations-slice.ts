@@ -1,9 +1,17 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+export interface AllocationRuleCategory {
+  id: string;
+  label: string;
+}
+
 export interface AllocationRule {
   id: string;
   label: string;
   percentage: number;
+  monthId: string;
+  categoryIds?: string[];
+  categories?: AllocationRuleCategory[];
 }
 
 export interface Allocation {

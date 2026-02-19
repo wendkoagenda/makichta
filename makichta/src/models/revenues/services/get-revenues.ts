@@ -4,26 +4,20 @@ import type { Revenue } from "../types/revenue";
 interface GetRevenuesOptions {
   userId: string;
   sourceId?: string;
-  month?: string; // YYYY-MM
+  monthId?: string; // YYYY-MM
 }
 
 export async function getRevenues(options: GetRevenuesOptions): Promise<Revenue[]> {
-  const { userId, sourceId, month } = options;
+  const { userId, sourceId, monthId } = options;
 
   const where: {
     userId: string;
     sourceId?: string;
-    date?: { gte: Date; lt: Date };
+    monthId?: string;
   } = { userId };
 
   if (sourceId) where.sourceId = sourceId;
-
-  if (month) {
-    const [year, m] = month.split("-").map(Number);
-    const start = new Date(year, m - 1, 1);
-    const end = new Date(year, m, 1);
-    where.date = { gte: start, lt: end };
-  }
+  if (monthId) where.monthId = monthId;
 
   const rows = await prisma.revenue.findMany({
     where,

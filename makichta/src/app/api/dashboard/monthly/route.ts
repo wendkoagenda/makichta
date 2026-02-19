@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getAllocatedByCategoryForMonth } from "@/models/allocation-rules/services/get-allocated-by-category-for-month";
 
 export interface MonthlyDashboardData {
   month: string;
@@ -11,7 +12,13 @@ export interface MonthlyDashboardData {
   totalInvestments: number;
   savingsRate: number; // % épargne = (revenus - dépenses) / revenus * 100
   remainingToLive: number; // revenus - dépenses
-  expenseByCategory: { label: string; amount: number; percent: number }[];
+  expenseByCategory: {
+    categoryId: string;
+    label: string;
+    amount: number;
+    percent: number;
+    allocated?: number;
+  }[];
   goalsProgress: { label: string; current: number; target: number; percent: number }[];
 }
 
@@ -22,37 +29,28 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const month = searchParams.get("month");
-  if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+  const monthId = searchParams.get("month");
+  if (!monthId || !/^\d{4}-\d{2}$/.test(monthId)) {
     return NextResponse.json(
       { error: "Paramètre month requis (YYYY-MM)" },
       { status: 400 }
     );
   }
 
-  const [year, m] = month.split("-").map(Number);
+  const [year, m] = monthId.split("-").map(Number);
   const start = new Date(year, m - 1, 1);
   const end = new Date(year, m, 1);
 
-  const [revenues, expenses, contributions, investments, categories, goals] =
+  const [expenses, contributions, investments, categories, goals, allocatedByCategory] =
     await Promise.all([
-      prisma.revenue.findMany({
-        where: {
-          userId: session.user.id,
-          date: { gte: start, lt: end },
-        },
-      }),
       prisma.expense.findMany({
-        where: {
-          userId: session.user.id,
-          date: { gte: start, lt: end },
-        },
+        where: { userId: session.user.id, monthId },
         include: { category: true },
       }),
       prisma.savingContribution.findMany({
         where: {
           savingGoal: { userId: session.user.id },
-          date: { gte: start, lt: end },
+          monthId,
         },
       }),
       prisma.investment.findMany({
@@ -62,12 +60,17 @@ export async function GET(request: Request) {
         },
       }),
       prisma.expenseCategory.findMany({
-        where: { userId: session.user.id },
+        where: { userId: session.user.id, monthId },
       }),
       prisma.savingGoal.findMany({
         where: { userId: session.user.id },
       }),
+      getAllocatedByCategoryForMonth(session.user.id, monthId),
     ]);
+
+  const revenues = await prisma.revenue.findMany({
+    where: { userId: session.user.id, monthId },
+  });
 
   const totalRevenues = revenues.reduce((s, r) => s + r.amount, 0);
   const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
@@ -79,21 +82,41 @@ export async function GET(request: Request) {
       ? Math.round(((totalRevenues - totalExpenses) / totalRevenues) * 1000) / 10
       : 0;
 
-  const byCategory = expenses.reduce(
+  const categoryIdToLabel = new Map(categories.map((c) => [c.id, c.label]));
+  const byCategoryId = expenses.reduce(
     (acc, e) => {
+      const cid = e.categoryId ?? "other";
       const label = e.category?.label ?? "Autre";
-      if (!acc[label]) acc[label] = 0;
-      acc[label] += e.amount;
+      if (!acc[cid]) acc[cid] = { label, amount: 0 };
+      acc[cid].amount += e.amount;
+      acc[cid].label = label;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, { label: string; amount: number }>
   );
 
-  const expenseByCategory = Object.entries(byCategory).map(([label, amount]) => ({
-    label,
-    amount,
-    percent: totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0,
-  }));
+  const categoryIdsFromExpenses = new Set(Object.keys(byCategoryId));
+  const categoryIdsWithAllocated = new Set(Object.keys(allocatedByCategory));
+  const allCategoryIds = new Set([
+    ...categoryIdsFromExpenses,
+    ...categoryIdsWithAllocated,
+  ]);
+
+  const expenseByCategory = Array.from(allCategoryIds).map((categoryId) => {
+    const spent = byCategoryId[categoryId]?.amount ?? 0;
+    const label =
+      byCategoryId[categoryId]?.label ??
+      categoryIdToLabel.get(categoryId) ??
+      "Autre";
+    const allocated = allocatedByCategory[categoryId];
+    return {
+      categoryId,
+      label,
+      amount: spent,
+      percent: totalExpenses > 0 ? (spent / totalExpenses) * 100 : 0,
+      ...(allocated != null && allocated > 0 && { allocated }),
+    };
+  });
   expenseByCategory.sort((a, b) => b.amount - a.amount);
 
   const goalsProgress = goals.map((g) => ({
@@ -107,7 +130,7 @@ export async function GET(request: Request) {
   }));
 
   const data: MonthlyDashboardData = {
-    month,
+    month: monthId,
     totalRevenues,
     totalExpenses,
     totalSavings,

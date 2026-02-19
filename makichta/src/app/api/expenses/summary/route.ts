@@ -10,9 +10,10 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const month = searchParams.get("month");
+  const monthId =
+    searchParams.get("monthId") ?? searchParams.get("month") ?? undefined;
 
-  if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+  if (!monthId || !/^\d{4}-\d{2}$/.test(monthId)) {
     return NextResponse.json(
       { error: "Paramètre month requis (format YYYY-MM)" },
       { status: 400 }
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const summary = await getExpenseSummary(session.user.id, month);
+    const summary = await getExpenseSummary(session.user.id, monthId);
     return NextResponse.json(summary);
   } catch {
     return NextResponse.json(

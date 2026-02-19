@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -14,7 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Wallet } from "lucide-react";
 
 function LoginForm() {
   const router = useRouter();
@@ -52,10 +52,17 @@ function LoginForm() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Wallet className="h-6 w-6 text-primary" />
+          <div className="mx-auto mb-4 flex justify-center">
+            <Image
+              src="/logo_mk-no-bg.png"
+              alt="Ma Kichta"
+              width={180}
+              height={56}
+              className="h-14 w-auto object-contain"
+              priority
+            />
           </div>
-          <CardTitle className="text-2xl">Ma Kichta</CardTitle>
+          <CardTitle className="sr-only">Ma Kichta</CardTitle>
           <CardDescription>Connexion à votre espace</CardDescription>
         </CardHeader>
         <CardContent>
@@ -94,8 +101,11 @@ function LoginForm() {
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
             Pas encore de compte ?{" "}
-            <Link href="/register" className="font-medium text-primary hover:underline">
-              S&apos;inscrire
+            <Link
+              href="/register"
+              className="font-medium text-primary hover:underline"
+            >
+              S'inscrire
             </Link>
           </p>
         </CardContent>
@@ -111,10 +121,17 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-background p-4">
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
-              <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <Wallet className="h-6 w-6 text-primary" />
+              <div className="mx-auto mb-4 flex justify-center">
+                <Image
+                  src="/logo_mk-no-bg.png"
+                  alt="Ma Kichta"
+                  width={180}
+                  height={56}
+                  className="h-14 w-auto object-contain"
+                  priority
+                />
               </div>
-              <CardTitle className="text-2xl">Ma Kichta</CardTitle>
+              <CardTitle className="sr-only">Ma Kichta</CardTitle>
               <CardDescription>Connexion à votre espace</CardDescription>
             </CardHeader>
             <CardContent>

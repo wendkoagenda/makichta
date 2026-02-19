@@ -12,13 +12,13 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const categoryId = searchParams.get("categoryId") ?? undefined;
-  const month = searchParams.get("month") ?? undefined;
+  const monthId = searchParams.get("monthId") ?? searchParams.get("month") ?? undefined;
 
   try {
     const expenses = await getExpenses({
       userId: session.user.id,
       categoryId,
-      month,
+      monthId,
     });
     return NextResponse.json(expenses);
   } catch {
