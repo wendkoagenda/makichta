@@ -44,17 +44,18 @@ if (process.env.NODE_ENV !== "production") {
   process.exit(0);
 }
 
+// DEBUG: logs en clair — remettre le masquage après diagnostic
 if (engine === "mysql") {
   console.log(`[migrate-deploy] DB_HOST      = ${process.env.DB_HOST ?? "(not set)"}`);
   console.log(`[migrate-deploy] DB_PORT      = ${process.env.DB_PORT ?? "(not set, default 3306)"}`);
   console.log(`[migrate-deploy] DB_NAME      = ${process.env.DB_NAME ?? "(not set)"}`);
   console.log(`[migrate-deploy] DB_USER      = ${process.env.DB_USER ?? "(not set)"}`);
-  console.log(`[migrate-deploy] DB_PASSWORD  = ${process.env.DB_PASSWORD ? "(set, " + process.env.DB_PASSWORD.length + " chars)" : "(not set)"}`);
+  console.log(`[migrate-deploy] DB_PASSWORD  = ${process.env.DB_PASSWORD ?? "(not set)"}`);
 }
 
 const url = buildDatabaseUrl(engine);
 process.env.DATABASE_URL = url;
-console.log(`[migrate-deploy] DATABASE_URL = ${maskUrl(url)}`);
+console.log(`[migrate-deploy] DATABASE_URL = ${url}`);
 
 const schemaPath = path.join(__dirname, "..", "prisma", "schema.prisma");
 console.log(`[migrate-deploy] Schema       = ${schemaPath}`);
