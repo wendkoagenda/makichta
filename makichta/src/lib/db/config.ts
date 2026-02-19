@@ -1,44 +1,20 @@
 import "dotenv/config";
 
-type DbEngine = "sqlite" | "mysql";
-
-function getEngine(): DbEngine {
-  const conn = process.env.DB_CONNECTION?.toLowerCase();
-  if (conn === "sqlite" || conn === "mysql") {
-    return conn;
-  }
-  return process.env.NODE_ENV === "production" ? "mysql" : "sqlite";
-}
-
-function buildDatabaseUrl(engine: DbEngine): string {
-  if (engine === "sqlite") {
-    const path = process.env.SQLITE_PATH || "prisma/dev.db";
-    return `file:${path}`;
-  }
-  const host = process.env.DB_HOST || "localhost";
-  const port = process.env.DB_PORT || "3306";
-  const name = process.env.DB_NAME ?? "";
-  const user = process.env.DB_USER ?? "";
-  const password = process.env.DB_PASSWORD ?? "";
+function getDatabaseUrl(): string {
+  const url = process.env.DATABASE_URL;
+  if (url) return url;
+  const host = process.env.PG_HOST || "localhost";
+  const port = process.env.PG_PORT || "5432";
+  const database = process.env.PG_DATABASE ?? "makichta";
+  const user = process.env.PG_USER ?? "";
+  const password = process.env.PG_PASSWORD ?? "";
   const encodedPassword = encodeURIComponent(password);
-  return `mysql://${user}:${encodedPassword}@${host}:${port}/${name}`;
+  return `postgresql://${user}:${encodedPassword}@${host}:${port}/${database}`;
 }
 
-export function loadDatabaseConfig(): { engine: DbEngine; databaseUrl: string } {
-  const engine = getEngine();
-  const databaseUrl = buildDatabaseUrl(engine);
+const databaseUrl = getDatabaseUrl();
+process.env.DATABASE_URL = databaseUrl;
 
-  process.env.DATABASE_URL = databaseUrl;
-
-  const logPrefix = "[DB]";
-  if (engine === "sqlite") {
-    console.log(`${logPrefix} Using SQLite`);
-  } else {
-    const host = process.env.DB_HOST || "localhost";
-    console.log(`${logPrefix} Using MySQL (${host})`);
-  }
-
-  return { engine, databaseUrl };
+if (process.env.NODE_ENV !== "production") {
+  console.log("[DB] Using PostgreSQL");
 }
-
-loadDatabaseConfig();

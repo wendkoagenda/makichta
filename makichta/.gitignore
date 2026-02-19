@@ -33,9 +33,10 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
-# database (SQLite local)
+# database (fichiers SQLite locaux, non utilisés depuis passage à PostgreSQL)
 *.db
 *.db-journal
+prisma/dev.db
 
 # vercel
 .vercel
