@@ -17,17 +17,24 @@ import { PRIORITY_LABELS } from "../constants/priority-labels";
 
 interface SavingGoalFormProps {
   goal?: SavingGoal | null;
+  /** Prérempli lors de l'ajout d'une ligne à un projet */
+  projectId?: string | null;
+  /** Liste des projets pour le sélecteur (Sans projet + projets) */
+  projects?: { id: string; label: string }[];
   onSubmit: (data: {
     label: string;
     targetAmount: number;
     deadline: string | null;
     priority: GoalPriority;
+    projectId?: string | null;
   }) => Promise<boolean>;
   onCancel?: () => void;
 }
 
 export function SavingGoalForm({
   goal,
+  projectId: initialProjectId,
+  projects = [],
   onSubmit,
   onCancel,
 }: SavingGoalFormProps) {
@@ -38,6 +45,11 @@ export function SavingGoalForm({
   const [deadline, setDeadline] = useState(goal?.deadline ?? "");
   const [priority, setPriority] = useState<GoalPriority>(
     goal?.priority ?? "MEDIUM"
+  );
+  /** Valeur sentinelle pour "Sans projet" (Radix Select n'accepte pas value="") */
+  const NONE_PROJECT = "__none__";
+  const [projectId, setProjectId] = useState<string | "">(
+    initialProjectId ?? goal?.projectId ?? ""
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +74,9 @@ export function SavingGoalForm({
         targetAmount: amount,
         deadline: deadline.trim() || null,
         priority,
+        ...(projects.length > 0 && {
+          projectId: projectId === "" ? null : projectId,
+        }),
       });
       if (ok && !goal) {
         setLabel("");
@@ -107,6 +122,27 @@ export function SavingGoalForm({
           onChange={(e) => setDeadline(e.target.value)}
         />
       </div>
+      {projects.length > 0 && (
+        <div className="space-y-2">
+          <Label htmlFor="goal-project">Projet</Label>
+          <Select
+            value={projectId === "" ? NONE_PROJECT : projectId}
+            onValueChange={(v) => setProjectId(v === NONE_PROJECT ? "" : v)}
+          >
+            <SelectTrigger id="goal-project">
+              <SelectValue placeholder="Sans projet" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NONE_PROJECT}>Sans projet</SelectItem>
+              {projects.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       <div className="space-y-2">
         <Label htmlFor="goal-priority">Priorité</Label>
         <Select

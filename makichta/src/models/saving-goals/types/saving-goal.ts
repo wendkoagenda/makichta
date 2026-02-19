@@ -7,6 +7,8 @@ export interface SavingGoal {
   currentAmount: number;
   deadline: string | null;
   priority: GoalPriority;
+  projectId?: string | null;
+  projectLabel?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -16,6 +18,7 @@ export interface CreateSavingGoalInput {
   targetAmount: number;
   deadline?: string | null;
   priority?: GoalPriority;
+  projectId?: string | null;
 }
 
 export interface UpdateSavingGoalInput {
@@ -23,4 +26,5 @@ export interface UpdateSavingGoalInput {
   targetAmount?: number;
   deadline?: string | null;
   priority?: GoalPriority;
+  projectId?: string | null;
 }

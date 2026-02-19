@@ -4,14 +4,19 @@ import { authOptions } from "@/lib/auth";
 import { getSavingGoals } from "@/models/saving-goals/services/get-saving-goals";
 import { createSavingGoal } from "@/models/saving-goals/services/create-saving-goal";
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 
   try {
-    const goals = await getSavingGoals(session.user.id);
+    const { searchParams } = new URL(request.url);
+    const projectId = searchParams.get("projectId") ?? undefined;
+    const goals = await getSavingGoals({
+      userId: session.user.id,
+      ...(projectId !== undefined && { projectId: projectId || null }),
+    });
     return NextResponse.json(goals);
   } catch {
     return NextResponse.json(
@@ -29,7 +34,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { label, targetAmount, deadline, priority } = body;
+    const { label, targetAmount, deadline, priority, projectId } = body;
 
     if (!label) {
       return NextResponse.json(
@@ -43,6 +48,7 @@ export async function POST(request: Request) {
       targetAmount: targetAmount != null ? Math.max(0, Number(targetAmount)) : 0,
       deadline: deadline || null,
       priority: priority === "HIGH" || priority === "LOW" ? priority : "MEDIUM",
+      ...(projectId !== undefined && projectId !== "" && { projectId }),
     });
 
     return NextResponse.json(goal);

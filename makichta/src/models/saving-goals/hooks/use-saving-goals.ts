@@ -17,19 +17,26 @@ export function useSavingGoals() {
   const goals = useAppSelector((state) => state.savings.goals);
   const isLoading = useAppSelector((state) => state.savings.isLoading);
 
-  const fetchGoals = useCallback(async () => {
-    dispatch(setLoading(true));
-    try {
-      const res = await fetch("/api/saving-goals");
-      if (!res.ok) throw new Error("Erreur réseau");
-      const data: SavingGoal[] = await res.json();
-      dispatch(setGoals(data));
-    } catch {
-      dispatch(setGoals([]));
-    } finally {
-      dispatch(setLoading(false));
-    }
-  }, [dispatch]);
+  const fetchGoals = useCallback(
+    async (projectId?: string | null) => {
+      dispatch(setLoading(true));
+      try {
+        const url =
+          projectId !== undefined && projectId !== null
+            ? `/api/saving-goals?projectId=${encodeURIComponent(projectId)}`
+            : "/api/saving-goals";
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Erreur réseau");
+        const data: SavingGoal[] = await res.json();
+        dispatch(setGoals(data));
+      } catch {
+        dispatch(setGoals([]));
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
 
   const createGoal = useCallback(
     async (input: CreateSavingGoalInput): Promise<SavingGoal | null> => {

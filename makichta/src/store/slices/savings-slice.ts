@@ -7,6 +7,8 @@ export interface SavingGoal {
   currentAmount: number;
   deadline: string | null;
   priority: "HIGH" | "MEDIUM" | "LOW";
+  projectId?: string | null;
+  projectLabel?: string;
   createdAt?: string;
   updatedAt?: string;
 }

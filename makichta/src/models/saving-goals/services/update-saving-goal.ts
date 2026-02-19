@@ -20,21 +20,29 @@ export async function updateSavingGoal(
         deadline: input.deadline ? new Date(input.deadline) : null,
       }),
       ...(input.priority != null && { priority: input.priority }),
+      ...(input.projectId !== undefined && {
+        projectId: input.projectId == null || input.projectId === "" ? null : input.projectId,
+      }),
     },
   });
 
   if (row.count === 0) return null;
 
-  const updated = await prisma.savingGoal.findUnique({ where: { id } });
+  const updated = await prisma.savingGoal.findUnique({
+    where: { id },
+    include: { project: { select: { label: true } } },
+  });
   if (!updated) return null;
 
   return {
     id: updated.id,
     label: updated.label,
-    targetAmount: updated.targetAmount,
-    currentAmount: updated.currentAmount,
+    targetAmount: Number(updated.targetAmount),
+    currentAmount: Number(updated.currentAmount),
     deadline: updated.deadline?.toISOString().slice(0, 10) ?? null,
     priority: updated.priority as "HIGH" | "MEDIUM" | "LOW",
+    projectId: updated.projectId ?? undefined,
+    projectLabel: updated.project?.label ?? undefined,
     createdAt: updated.createdAt?.toISOString(),
     updatedAt: updated.updatedAt?.toISOString(),
   };

@@ -20,19 +20,23 @@ export async function PUT(
 
   try {
     const body = await request.json();
-    const { label, targetAmount, deadline, priority } = body;
+    const { label, targetAmount, deadline, priority, projectId } = body;
 
     const updates: {
       label?: string;
       targetAmount?: number;
       deadline?: string | null;
       priority?: "HIGH" | "MEDIUM" | "LOW";
+      projectId?: string | null;
     } = {};
     if (label != null) updates.label = String(label).trim();
     if (targetAmount != null) updates.targetAmount = Math.max(0, Number(targetAmount));
     if (deadline !== undefined) updates.deadline = deadline || null;
     if (priority != null && ["HIGH", "MEDIUM", "LOW"].includes(priority)) {
       updates.priority = priority;
+    }
+    if (projectId !== undefined) {
+      updates.projectId = projectId == null || projectId === "" ? null : projectId;
     }
 
     const goal = await updateSavingGoal(session.user.id, id, updates);

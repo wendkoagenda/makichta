@@ -20,6 +20,7 @@ import { Pencil, Plus, PiggyBank, Trash2 } from "lucide-react";
 
 interface SavingGoalCardProps {
   goal: SavingGoal;
+  projects?: { id: string; label: string }[];
   onUpdate: (
     id: string,
     data: {
@@ -27,6 +28,7 @@ interface SavingGoalCardProps {
       targetAmount: number;
       deadline: string | null;
       priority: "HIGH" | "MEDIUM" | "LOW";
+      projectId?: string | null;
     }
   ) => Promise<boolean>;
   onDelete: (id: string) => Promise<void>;
@@ -35,6 +37,7 @@ interface SavingGoalCardProps {
 
 export function SavingGoalCard({
   goal,
+  projects = [],
   onUpdate,
   onDelete,
   onContribution,
@@ -115,6 +118,7 @@ export function SavingGoalCard({
         {editing ? (
           <SavingGoalForm
             goal={goal}
+            projects={projects}
             onSubmit={async (data) => {
               const ok = await onUpdate(goal.id, data);
               if (ok) setEditing(false);
