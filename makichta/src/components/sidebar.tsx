@@ -34,7 +34,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/investments", label: "Investissement", icon: <TrendingUp size={20} /> },
   { href: "/dashboard/planning", label: "Planification", icon: <CalendarClock size={20} /> },
   { href: "/dashboard/wishlist", label: "Wishlist", icon: <ShoppingBag size={20} /> },
-  { href: "/dashboard/depreciation", label: "Amortissement", icon: <Building2 size={20} /> },
+  { href: "/dashboard/depreciation", label: "Actifs & passifs", icon: <Building2 size={20} /> },
   { href: "/dashboard/settings", label: "Paramètres", icon: <Settings size={20} /> },
 ];
 
