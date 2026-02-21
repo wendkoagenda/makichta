@@ -99,10 +99,10 @@ export function AllocationRuleList() {
   }, [monthId, fetchRules]);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+    <Card className="min-w-0">
+      <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <CardTitle>Règles de répartition</CardTitle>
-        <div className="flex gap-2">
+        <div className="flex shrink-0 gap-2">
           {rules.length === 0 && (
             <Button
               size="sm"
@@ -175,10 +175,10 @@ export function AllocationRuleList() {
               {rules.map((r) => (
                 <li
                   key={r.id}
-                  className="flex items-center justify-between rounded-lg border border-border p-3"
+                  className="flex min-w-0 flex-col gap-2 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   {editingId === r.id ? (
-                    <div className="flex-1">
+                    <div className="min-w-0 flex-1">
                       <AllocationRuleForm
                         monthId={monthId}
                         rule={r}
@@ -188,9 +188,9 @@ export function AllocationRuleList() {
                     </div>
                   ) : (
                     <>
-                      <div>
-                        <p className="font-medium">{r.label}</p>
-                        <p className="text-xs text-muted-foreground">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium wrap-break-word">{r.label}</p>
+                        <p className="text-xs text-muted-foreground wrap-break-word">
                           {r.allocationType === "AMOUNT"
                             ? `Montant fixe : ${r.amount != null ? convertAndFormat(r.amount) : "0"}`
                             : `${r.percentage} % des revenus`}
@@ -208,31 +208,32 @@ export function AllocationRuleList() {
                           )}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex shrink-0 items-center gap-2">
                         {r.calculatedAmount != null && (
                           <span className="text-sm font-medium tabular-nums">
                             {convertAndFormat(r.calculatedAmount)}
                           </span>
                         )}
                         <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setEditingId(r.id);
-                            setShowAddForm(false);
-                          }}
-                        >
-                          <Pencil size={16} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(r.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 size={16} />
-                        </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="min-h-[44px] min-w-[44px] shrink-0"
+                            onClick={() => {
+                              setEditingId(r.id);
+                              setShowAddForm(false);
+                            }}
+                          >
+                            <Pencil size={16} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="min-h-[44px] min-w-[44px] shrink-0 text-destructive hover:text-destructive"
+                            onClick={() => handleDelete(r.id)}
+                          >
+                            <Trash2 size={16} />
+                          </Button>
                         </div>
                       </div>
                     </>

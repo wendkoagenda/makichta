@@ -69,22 +69,24 @@ export function SavingProjectCard({
   const totalCurrent = goals.reduce((s, g) => s + g.currentAmount, 0);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div className="flex items-center gap-2">
-          <FolderOpen className="h-5 w-5 text-primary/70" />
-          <div>
-            <p className="font-medium">{project.label}</p>
-            <p className="text-xs text-muted-foreground">
-              {goals.length} ligne(s)
-              {project.targetAmount != null && project.targetAmount > 0 && (
-                <> · Objectif global : {convertAndFormat(project.targetAmount)}</>
-              )}
-              {project.deadline && ` · Échéance ${project.deadline}`}
-            </p>
+    <Card className="min-w-0">
+      <CardHeader className="flex flex-col gap-2 pb-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <FolderOpen className="h-5 w-5 shrink-0 text-primary/70" />
+            <div className="min-w-0">
+              <p className="font-medium wrap-break-word">{project.label}</p>
+              <p className="text-xs text-muted-foreground wrap-break-word">
+                {goals.length} ligne(s)
+                {project.targetAmount != null && project.targetAmount > 0 && (
+                  <> · Objectif global : {convertAndFormat(project.targetAmount)}</>
+                )}
+                {project.deadline && ` · Échéance ${project.deadline}`}
+              </p>
+            </div>
           </div>
         </div>
-        <div className="flex gap-1">
+        <div className="flex shrink-0 gap-1">
           <Dialog open={editProjectOpen} onOpenChange={setEditProjectOpen}>
             <Button
               variant="ghost"
@@ -153,7 +155,7 @@ export function SavingProjectCard({
           </DialogContent>
         </Dialog>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {goals.map((goal) => (
             <SavingGoalCard
               key={goal.id}

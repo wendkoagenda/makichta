@@ -124,8 +124,8 @@ function MonthlyView(props: {
 
   return (
     <React.Fragment>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card>
+      <div className="grid min-w-0 grid-cols-2 gap-4 lg:grid-cols-5">
+        <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Revenus {monthLabel}
@@ -142,7 +142,7 @@ function MonthlyView(props: {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Depenses {monthLabel}
@@ -159,7 +159,7 @@ function MonthlyView(props: {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Epargne objectifs
@@ -176,7 +176,7 @@ function MonthlyView(props: {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Epargne fonds de secours
@@ -193,7 +193,7 @@ function MonthlyView(props: {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Investissements
@@ -331,8 +331,8 @@ function MonthlyView(props: {
               Objectifs (dépense prévue) et fonds de secours
             </p>
           </CardHeader>
-          <CardContent>
-            <div className="h-[200px]">
+          <CardContent className="min-w-0">
+            <div className="h-[200px] w-full min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={data.goalsProgress.map((g) => ({
@@ -343,10 +343,11 @@ function MonthlyView(props: {
                         : `${g.label} (Objectif)`,
                   }))}
                   layout="vertical"
-                  margin={{ left: 80, right: 20 }}
+                  margin={{ left: 48, right: 8 }}
                 >
                   <XAxis
                     type="number"
+                    tick={{ fontSize: 10 }}
                     tickFormatter={function (v) {
                       return v + "%";
                     }}
@@ -354,8 +355,9 @@ function MonthlyView(props: {
                   <YAxis
                     type="category"
                     dataKey="displayLabel"
-                    width={70}
-                    tick={{ fontSize: 11 }}
+                    width={46}
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(v) => (typeof v === "string" && v.length > 18 ? v.slice(0, 16) + "…" : v)}
                   />
                   <Tooltip
                     formatter={function (v: number | undefined) {
@@ -560,7 +562,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
             Tableau de bord
           </h1>
           <p className="text-muted-foreground">

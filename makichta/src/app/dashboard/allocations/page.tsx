@@ -6,7 +6,7 @@ export default function AllocationsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Répartition</h1>
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Répartition</h1>
         <p className="text-muted-foreground">
           Définissez les pourcentages par poste (épargne, charges, loisirs…). Les
           montants seront calculés automatiquement à chaque nouveau revenu.

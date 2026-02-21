@@ -68,13 +68,13 @@ export function SavingGoalCard({
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-        <div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <p className="font-medium">{goal.label}</p>
+    <Card className="min-w-0">
+      <CardHeader className="flex flex-col gap-2 pb-2 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-medium break-words">{goal.label}</p>
             <span
-              className={`text-xs px-1.5 py-0.5 rounded ${
+              className={`shrink-0 text-xs px-1.5 py-0.5 rounded ${
                 goal.savingType === "EMERGENCY"
                   ? "bg-amber-500/20 text-amber-700 dark:text-amber-400"
                   : "bg-primary/10 text-primary"
@@ -83,12 +83,12 @@ export function SavingGoalCard({
               {SAVING_TYPE_LABELS[goal.savingType]}
             </span>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground break-words">
             {PRIORITY_LABELS[goal.priority]} · Cible : {convertAndFormat(goal.targetAmount)}
             {goal.deadline && ` · Échéance ${goal.deadline}`}
           </p>
         </div>
-        <div className="flex gap-1">
+        <div className="flex shrink-0 gap-1">
           <Dialog open={contribDialogOpen} onOpenChange={setContribDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="ghost" size="icon" title="Ajouter une contribution">
@@ -141,18 +141,18 @@ export function SavingGoalCard({
           />
         ) : (
           <>
-            <div className="flex items-center gap-2">
-              <PiggyBank className="h-5 w-5 text-primary/70" />
-              <div className="flex-1">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-muted-foreground">
+            <div className="flex items-center gap-2 min-w-0">
+              <PiggyBank className="h-5 w-5 shrink-0 text-primary/70" />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap justify-between gap-x-2 text-sm mb-1">
+                  <span className="text-muted-foreground truncate min-w-0">
                     {convertAndFormat(goal.currentAmount)} / {convertAndFormat(goal.targetAmount)}
                   </span>
-                  <span className="font-medium">
+                  <span className="font-medium shrink-0">
                     {progressPercent.toFixed(0)} %
                   </span>
                 </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div className="h-2 rounded-full bg-muted overflow-hidden min-w-0">
                   <div
                     className="h-full rounded-full bg-primary transition-all"
                     style={{ width: `${progressPercent}%` }}

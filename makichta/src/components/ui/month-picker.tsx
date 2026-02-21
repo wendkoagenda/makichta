@@ -54,7 +54,7 @@ export function MonthPicker({
         <Label className="mb-1 block text-sm font-medium">{label}</Label>
       )}
       <Select value={value} onValueChange={onValueChange}>
-        <SelectTrigger className={triggerClassName ?? "w-[180px]"}>
+        <SelectTrigger className={triggerClassName ?? "w-full sm:w-[180px]"}>
           <SelectValue placeholder="Choisir un mois" />
         </SelectTrigger>
         <SelectContent>

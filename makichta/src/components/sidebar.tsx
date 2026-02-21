@@ -7,43 +7,15 @@ import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/models/settings/hooks/use-settings";
 import { Button } from "@/components/ui/button";
-import {
-  LayoutDashboard,
-  Wallet,
-  History,
-  PieChart,
-  CreditCard,
-  FolderTree,
-  PiggyBank,
-  TrendingUp,
-  CalendarClock,
-  ShoppingBag,
-  Building2,
-  Settings,
-  LogOut,
-} from "lucide-react";
-
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "Tableau de bord", icon: <LayoutDashboard size={20} /> },
-  { href: "/dashboard/revenues", label: "Revenus", icon: <Wallet size={20} /> },
-  { href: "/dashboard/revenue-history", label: "Historique des revenus", icon: <History size={20} /> },
-  { href: "/dashboard/allocations", label: "Répartition", icon: <PieChart size={20} /> },
-  { href: "/dashboard/expenses", label: "Dépenses", icon: <CreditCard size={20} /> },
-  { href: "/dashboard/expense-categories", label: "Catégories de dépenses", icon: <FolderTree size={20} /> },
-  { href: "/dashboard/savings", label: "Épargne", icon: <PiggyBank size={20} /> },
-  { href: "/dashboard/investments", label: "Investissement", icon: <TrendingUp size={20} /> },
-  { href: "/dashboard/planning", label: "Planification", icon: <CalendarClock size={20} /> },
-  { href: "/dashboard/wishlist", label: "Wishlist", icon: <ShoppingBag size={20} /> },
-  { href: "/dashboard/depreciation", label: "Actifs & passifs", icon: <Building2 size={20} /> },
-  { href: "/dashboard/settings", label: "Paramètres", icon: <Settings size={20} /> },
-];
+import { NAV_ITEMS } from "@/constants/nav-items";
+import { LogOut } from "lucide-react";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { settings } = useSettings();
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-border bg-card">
+    <aside className="hidden h-screen w-64 flex-col border-r border-border bg-card md:flex">
       <Link href="/dashboard" className="flex h-16 items-center gap-2 border-b border-border px-6">
         <Image
           src="/logo_mk-no-bg.png"
@@ -61,6 +33,7 @@ export function Sidebar() {
             const isActive =
               pathname === item.href ||
               (item.href !== "/dashboard" && pathname.startsWith(item.href));
+            const Icon = item.icon;
 
             return (
               <li key={item.href}>
@@ -73,7 +46,7 @@ export function Sidebar() {
                       : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
-                  {item.icon}
+                  <Icon size={20} />
                   {item.label}
                 </Link>
               </li>

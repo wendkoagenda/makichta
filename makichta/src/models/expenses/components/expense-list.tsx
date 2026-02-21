@@ -96,8 +96,8 @@ export function ExpenseList({ onExpenseChange }: ExpenseListProps) {
   const total = expenses.reduce((s, e) => s + e.amount, 0);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+    <Card className="min-w-0">
+      <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <CardTitle>Dépenses du mois</CardTitle>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -135,10 +135,10 @@ export function ExpenseList({ onExpenseChange }: ExpenseListProps) {
               {expenses.map((e) => (
                 <li
                   key={e.id}
-                  className="flex items-center justify-between rounded-lg border border-border p-3"
+                  className="flex min-w-0 flex-col gap-2 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   {editingId === e.id ? (
-                    <div className="flex-1">
+                    <div className="min-w-0 flex-1">
                       <ExpenseForm
                         categories={categories}
                         expense={e}
@@ -148,21 +148,22 @@ export function ExpenseList({ onExpenseChange }: ExpenseListProps) {
                     </div>
                   ) : (
                     <>
-                      <div>
-                        <p className="font-medium">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium wrap-break-word">
                           {getCategoryLabel(e.categoryId, e.categoryLabel)}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground wrap-break-word">
                           {e.date} · {e.description || "—"}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-destructive">
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className="font-medium text-destructive tabular-nums">
                           -{convertAndFormat(e.amount)}
                         </span>
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="min-h-[44px] min-w-[44px] shrink-0"
                           onClick={() => {
                             setEditingId(e.id);
                             setDialogOpen(false);
@@ -173,8 +174,8 @@ export function ExpenseList({ onExpenseChange }: ExpenseListProps) {
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="min-h-[44px] min-w-[44px] shrink-0 text-destructive hover:text-destructive"
                           onClick={() => handleDelete(e.id)}
-                          className="text-destructive hover:text-destructive"
                         >
                           <Trash2 size={16} />
                         </Button>

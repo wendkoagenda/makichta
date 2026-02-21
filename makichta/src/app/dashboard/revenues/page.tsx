@@ -35,7 +35,7 @@ export default function RevenuesPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Revenus</h1>
+          <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Revenus</h1>
           <p className="text-muted-foreground">
             Gérez vos sources de revenus et enregistrez vos entrées d&apos;argent
           </p>
@@ -45,7 +45,7 @@ export default function RevenuesPage() {
             label="Mois"
             value={monthId}
             onValueChange={setMonthId}
-            triggerClassName="w-[180px]"
+            triggerClassName="w-full sm:w-[180px]"
           />
           <Button variant="outline" size="sm" asChild>
             <Link href="/dashboard/revenue-history" className="gap-1">
