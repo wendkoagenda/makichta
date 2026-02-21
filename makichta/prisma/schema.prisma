@@ -83,21 +83,26 @@ model Revenue {
 }
 
 model AllocationRule {
-  id         String   @id @default(cuid())
-  userId     String
-  label      String
-  percentage Float
-  monthId    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id             String   @id @default(cuid())
+  userId         String
+  label          String
+  allocationType String   @default("PERCENT") // "PERCENT" | "AMOUNT"
+  percentage     Float    @default(0)
+  amount         Float?   // montant fixe quand allocationType = "AMOUNT"
+  monthId        String
+  savingGoalId   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   monthRef    Month             @relation(fields: [monthId], references: [id], onDelete: Restrict)
+  savingGoal  SavingGoal?       @relation(fields: [savingGoalId], references: [id], onDelete: SetNull)
   allocations Allocation[]
   categories  ExpenseCategory[]
 
   @@index([userId])
   @@index([userId, monthId])
+  @@index([savingGoalId])
 }
 
 model Allocation {
@@ -176,6 +181,7 @@ model SavingGoal {
   userId        String
   projectId     String?
   label         String
+  savingType    String    @default("TARGET") // "TARGET" = dépense prévue, "EMERGENCY" = fonds de secours
   targetAmount  Float
   currentAmount Float     @default(0)
   deadline      DateTime?
@@ -183,10 +189,11 @@ model SavingGoal {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project       SavingProject?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  contributions SavingContribution[]
-  wishlistItems WishlistItem[]
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project         SavingProject?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  allocationRules AllocationRule[]
+  contributions   SavingContribution[]
+  wishlistItems   WishlistItem[]
 
   @@index([userId])
   @@index([projectId])
@@ -199,6 +206,7 @@ model SavingContribution {
   amount       Float
   date         DateTime
   isAutomatic  Boolean  @default(false)
+  revenueId    String?
   createdAt    DateTime @default(now())
 
   savingGoal SavingGoal @relation(fields: [savingGoalId], references: [id], onDelete: Cascade)
@@ -206,6 +214,7 @@ model SavingContribution {
 
   @@index([savingGoalId])
   @@index([monthId])
+  @@index([revenueId])
 }
 
 model Investment {

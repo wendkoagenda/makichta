@@ -61,6 +61,7 @@ export function SavingGoalList() {
 
   const handleCreateGoal = async (data: {
     label: string;
+    savingType: "TARGET" | "EMERGENCY";
     targetAmount: number;
     deadline: string | null;
     priority: "HIGH" | "MEDIUM" | "LOW";

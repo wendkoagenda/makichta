@@ -8,10 +8,12 @@ export async function createSavingGoal(
   userId: string,
   input: CreateSavingGoalInput
 ): Promise<SavingGoal> {
+  const savingType = input.savingType === "EMERGENCY" ? "EMERGENCY" : "TARGET";
   const row = await prisma.savingGoal.create({
     data: {
       userId,
       label: input.label,
+      savingType,
       targetAmount: Math.max(0, input.targetAmount),
       deadline: input.deadline ? new Date(input.deadline) : null,
       priority: input.priority ?? "MEDIUM",
@@ -22,6 +24,7 @@ export async function createSavingGoal(
   return {
     id: row.id,
     label: row.label,
+    savingType: row.savingType === "EMERGENCY" ? "EMERGENCY" : "TARGET",
     targetAmount: Number(row.targetAmount),
     currentAmount: Number(row.currentAmount),
     deadline: row.deadline?.toISOString().slice(0, 10) ?? null,

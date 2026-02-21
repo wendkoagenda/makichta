@@ -20,21 +20,37 @@ export async function PUT(
 
   try {
     const body = await _request.json();
-    const { label, percentage, expenseCategoryIds } = body;
+    const { label, allocationType, percentage, amount, expenseCategoryIds, savingGoalId } = body;
 
     const updates: {
       label?: string;
+      allocationType?: "PERCENT" | "AMOUNT";
       percentage?: number;
+      amount?: number | null;
       expenseCategoryIds?: string[];
+      savingGoalId?: string | null;
     } = {};
     if (label != null) updates.label = String(label).trim();
+    if (allocationType === "AMOUNT" || allocationType === "PERCENT") {
+      updates.allocationType = allocationType;
+    }
     if (percentage != null && !isNaN(Number(percentage))) {
       updates.percentage = Math.min(100, Math.max(0, Number(percentage)));
+    }
+    if (amount !== undefined) {
+      updates.amount =
+        amount != null && !isNaN(Number(amount)) ? Math.max(0, Number(amount)) : null;
     }
     if (expenseCategoryIds !== undefined) {
       updates.expenseCategoryIds = Array.isArray(expenseCategoryIds)
         ? expenseCategoryIds.filter((id: unknown) => typeof id === "string")
         : [];
+    }
+    if (savingGoalId !== undefined) {
+      updates.savingGoalId =
+        savingGoalId != null && savingGoalId !== ""
+          ? String(savingGoalId).trim()
+          : null;
     }
 
     const rule = await updateAllocationRule(session.user.id, id, updates);

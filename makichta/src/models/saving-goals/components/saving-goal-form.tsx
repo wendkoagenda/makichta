@@ -12,8 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { SavingGoal } from "../types/saving-goal";
-import type { GoalPriority } from "../types/saving-goal";
+import type { GoalPriority, SavingGoalType } from "../types/saving-goal";
 import { PRIORITY_LABELS } from "../constants/priority-labels";
+import { SAVING_TYPE_LABELS } from "../constants/saving-type-labels";
 
 interface SavingGoalFormProps {
   goal?: SavingGoal | null;
@@ -23,6 +24,7 @@ interface SavingGoalFormProps {
   projects?: { id: string; label: string }[];
   onSubmit: (data: {
     label: string;
+    savingType: SavingGoalType;
     targetAmount: number;
     deadline: string | null;
     priority: GoalPriority;
@@ -39,6 +41,9 @@ export function SavingGoalForm({
   onCancel,
 }: SavingGoalFormProps) {
   const [label, setLabel] = useState(goal?.label ?? "");
+  const [savingType, setSavingType] = useState<SavingGoalType>(
+    goal?.savingType ?? "TARGET"
+  );
   const [targetAmount, setTargetAmount] = useState(
     goal?.targetAmount != null ? String(goal.targetAmount) : ""
   );
@@ -71,6 +76,7 @@ export function SavingGoalForm({
     try {
       const ok = await onSubmit({
         label: trimmed,
+        savingType,
         targetAmount: amount,
         deadline: deadline.trim() || null,
         priority,
@@ -80,6 +86,7 @@ export function SavingGoalForm({
       });
       if (ok && !goal) {
         setLabel("");
+        setSavingType("TARGET");
         setTargetAmount("");
         setDeadline("");
         setPriority("MEDIUM");
@@ -100,6 +107,24 @@ export function SavingGoalForm({
           placeholder="Ex. Fonds d'urgence, Voyage, Achat immobilier"
           autoFocus
         />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="goal-type">Type d&apos;épargne</Label>
+        <Select
+          value={savingType}
+          onValueChange={(v) => setSavingType(v as SavingGoalType)}
+        >
+          <SelectTrigger id="goal-type">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(SAVING_TYPE_LABELS) as SavingGoalType[]).map((t) => (
+              <SelectItem key={t} value={t}>
+                {SAVING_TYPE_LABELS[t]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="space-y-2">
         <Label htmlFor="goal-target">Montant cible (USDT)</Label>

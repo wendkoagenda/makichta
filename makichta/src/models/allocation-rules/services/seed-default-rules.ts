@@ -25,6 +25,7 @@ export async function seedDefaultAllocationRules(
     data: DEFAULT_RULES.map((r) => ({
       userId,
       label: r.label,
+      allocationType: "PERCENT",
       percentage: r.percentage,
       monthId: targetMonthId,
     })),
@@ -34,13 +35,14 @@ export async function seedDefaultAllocationRules(
     where: { userId, monthId: targetMonthId },
     orderBy: { createdAt: "asc" },
     include: { categories: { select: { id: true, label: true } } },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- categories
-  } as any)) as unknown as { id: string; label: string; percentage: number; monthId: string; createdAt: Date; updatedAt: Date; categories: { id: string; label: string }[] }[];
+  })) as unknown as { id: string; label: string; allocationType: string; percentage: number; amount: number | null; monthId: string; createdAt: Date; updatedAt: Date; categories: { id: string; label: string }[] }[];
 
   return created.map((r) => ({
     id: r.id,
     label: r.label,
+    allocationType: r.allocationType === "AMOUNT" ? "AMOUNT" : "PERCENT",
     percentage: r.percentage,
+    amount: r.amount ?? null,
     monthId: r.monthId,
     categoryIds: r.categories.map((c) => c.id),
     categories: r.categories.map((c) => ({ id: c.id, label: c.label })),

@@ -25,6 +25,7 @@ export async function createSavingContribution(
         amount: Math.max(0, input.amount),
         date,
         isAutomatic: input.isAutomatic ?? false,
+        revenueId: input.revenueId ?? undefined,
       },
     }),
     prisma.savingGoal.update({

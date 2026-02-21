@@ -14,6 +14,7 @@ import { useCurrency } from "@/models/settings/hooks/use-currency";
 import { SavingGoalForm } from "./saving-goal-form";
 import { ContributionForm } from "./contribution-form";
 import { PRIORITY_LABELS } from "../constants/priority-labels";
+import { SAVING_TYPE_LABELS } from "../constants/saving-type-labels";
 import type { SavingGoal } from "../types/saving-goal";
 import type { SavingContribution } from "../types/saving-contribution";
 import { Pencil, Plus, PiggyBank, Trash2 } from "lucide-react";
@@ -25,6 +26,7 @@ interface SavingGoalCardProps {
     id: string,
     data: {
       label: string;
+      savingType: "TARGET" | "EMERGENCY";
       targetAmount: number;
       deadline: string | null;
       priority: "HIGH" | "MEDIUM" | "LOW";
@@ -69,7 +71,18 @@ export function SavingGoalCard({
     <Card>
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
         <div>
-          <p className="font-medium">{goal.label}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="font-medium">{goal.label}</p>
+            <span
+              className={`text-xs px-1.5 py-0.5 rounded ${
+                goal.savingType === "EMERGENCY"
+                  ? "bg-amber-500/20 text-amber-700 dark:text-amber-400"
+                  : "bg-primary/10 text-primary"
+              }`}
+            >
+              {SAVING_TYPE_LABELS[goal.savingType]}
+            </span>
+          </div>
           <p className="text-xs text-muted-foreground">
             {PRIORITY_LABELS[goal.priority]} · Cible : {convertAndFormat(goal.targetAmount)}
             {goal.deadline && ` · Échéance ${goal.deadline}`}

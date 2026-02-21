@@ -23,7 +23,8 @@ export async function GET(request: Request) {
     );
     const rules = await getAllocationRules(session.user.id, monthId);
     return NextResponse.json(rules);
-  } catch {
+  } catch (err) {
+    console.error("GET /api/allocation-rules", err);
     return NextResponse.json(
       { error: "Erreur lors du chargement des règles" },
       { status: 500 }
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { label, percentage, expenseCategoryIds, monthId, month } = body;
+    const { label, allocationType, percentage, amount, expenseCategoryIds, monthId, month, savingGoalId } = body;
     const resolvedMonthId =
       (typeof monthId === "string" && monthId) || (typeof month === "string" && month)
         ? (monthId || month)
@@ -52,22 +53,31 @@ export async function POST(request: Request) {
       );
     }
 
-    const pct =
-      percentage != null && !isNaN(Number(percentage))
-        ? Math.min(100, Math.max(0, Number(percentage)))
-        : 0;
-
     const rule = await createAllocationRule(session.user.id, {
       label: String(label).trim(),
-      percentage: pct,
+      allocationType:
+        allocationType === "AMOUNT" ? "AMOUNT" : "PERCENT",
+      percentage:
+        percentage != null && !isNaN(Number(percentage))
+          ? Math.min(100, Math.max(0, Number(percentage)))
+          : 0,
+      amount:
+        amount != null && !isNaN(Number(amount))
+          ? Math.max(0, Number(amount))
+          : null,
       monthId: resolvedMonthId,
       expenseCategoryIds: Array.isArray(expenseCategoryIds)
         ? expenseCategoryIds.filter((id: unknown) => typeof id === "string")
         : undefined,
+      savingGoalId:
+        savingGoalId != null && savingGoalId !== ""
+          ? String(savingGoalId).trim()
+          : null,
     });
 
     return NextResponse.json(rule);
-  } catch {
+  } catch (err) {
+    console.error("POST /api/allocation-rules", err);
     return NextResponse.json(
       { error: "Erreur lors de la création" },
       { status: 500 }

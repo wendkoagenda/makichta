@@ -51,6 +51,7 @@ interface MonthlyData {
   totalRevenues: number;
   totalExpenses: number;
   totalSavings: number;
+  savingsByType?: { target: number; emergency: number };
   totalInvestments: number;
   savingsRate: number;
   remainingToLive: number;
@@ -63,6 +64,7 @@ interface MonthlyData {
   }[];
   goalsProgress: {
     label: string;
+    savingType?: "TARGET" | "EMERGENCY";
     current: number;
     target: number;
     percent: number;
@@ -122,7 +124,7 @@ function MonthlyView(props: {
 
   return (
     <React.Fragment>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -160,16 +162,33 @@ function MonthlyView(props: {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Epargne realisee
+              Epargne objectifs
             </CardTitle>
-            <PiggyBank className="h-4 w-4 text-muted-foreground" />
+            <PiggyBank className="h-4 w-4 text-primary/80" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">
-              {convertAndFormat(data?.totalSavings ?? 0)}
+              {convertAndFormat(data?.savingsByType?.target ?? data?.totalSavings ?? 0)}
             </div>
             <p className="text-xs text-muted-foreground">
-              Contributions du mois
+              Dépense prévue · contributions du mois
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Epargne fonds de secours
+            </CardTitle>
+            <PiggyBank className="h-4 w-4 text-amber-600 dark:text-amber-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-amber-600 dark:text-amber-500">
+              {convertAndFormat(data?.savingsByType?.emergency ?? 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Fonds de secours · contributions du mois
             </p>
           </CardContent>
         </Card>
@@ -308,12 +327,21 @@ function MonthlyView(props: {
             <CardTitle className="text-base">
               {"Objectifs d'epargne"}
             </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Objectifs (dépense prévue) et fonds de secours
+            </p>
           </CardHeader>
           <CardContent>
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={data.goalsProgress}
+                  data={data.goalsProgress.map((g) => ({
+                    ...g,
+                    displayLabel:
+                      g.savingType === "EMERGENCY"
+                        ? `${g.label} (Fonds de secours)`
+                        : `${g.label} (Objectif)`,
+                  }))}
                   layout="vertical"
                   margin={{ left: 80, right: 20 }}
                 >
@@ -325,14 +353,14 @@ function MonthlyView(props: {
                   />
                   <YAxis
                     type="category"
-                    dataKey="label"
+                    dataKey="displayLabel"
                     width={70}
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 11 }}
                   />
                   <Tooltip
-formatter={function (v: number | undefined) {
-                    return (v ?? 0).toFixed(0) + " %";
-                  }}
+                    formatter={function (v: number | undefined) {
+                      return (v ?? 0).toFixed(0) + " %";
+                    }}
                     labelFormatter={function (l) {
                       return String(l);
                     }}

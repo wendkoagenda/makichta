@@ -29,6 +29,7 @@ interface SavingProjectCardProps {
   onDeleteProject: (id: string) => Promise<void>;
   onCreateGoal: (data: {
     label: string;
+    savingType: "TARGET" | "EMERGENCY";
     targetAmount: number;
     deadline: string | null;
     priority: "HIGH" | "MEDIUM" | "LOW";
@@ -38,6 +39,7 @@ interface SavingProjectCardProps {
     id: string,
     data: {
       label: string;
+      savingType: "TARGET" | "EMERGENCY";
       targetAmount: number;
       deadline: string | null;
       priority: "HIGH" | "MEDIUM" | "LOW";

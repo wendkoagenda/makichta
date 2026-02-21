@@ -9,6 +9,8 @@ export interface MonthlyDashboardData {
   totalRevenues: number;
   totalExpenses: number;
   totalSavings: number; // contributions du mois
+  /** Répartition par type : objectifs (dépense prévue) vs fonds de secours */
+  savingsByType: { target: number; emergency: number };
   totalInvestments: number;
   savingsRate: number; // % épargne = (revenus - dépenses) / revenus * 100
   remainingToLive: number; // revenus - dépenses
@@ -19,7 +21,13 @@ export interface MonthlyDashboardData {
     percent: number;
     allocated?: number;
   }[];
-  goalsProgress: { label: string; current: number; target: number; percent: number }[];
+  goalsProgress: {
+    label: string;
+    savingType: "TARGET" | "EMERGENCY";
+    current: number;
+    target: number;
+    percent: number;
+  }[];
 }
 
 export async function GET(request: Request) {
@@ -41,8 +49,65 @@ export async function GET(request: Request) {
   const start = new Date(year, m - 1, 1);
   const end = new Date(year, m, 1);
 
-  const [expenses, contributions, investments, categories, goals, allocatedByCategory] =
-    await Promise.all([
+  type ContributionRow = { amount: number; savingGoal?: { savingType: string } | null };
+  type GoalRow = { label: string; currentAmount: number; targetAmount: number; savingType?: string };
+  type ExpenseWithCategory = Awaited<
+    ReturnType<
+      typeof prisma.expense.findMany<{ include: { category: true } }>
+    >
+  >[number];
+
+  let expenses: ExpenseWithCategory[];
+  let contributions: ContributionRow[];
+  let investments: Awaited<ReturnType<typeof prisma.investment.findMany>>;
+  let categories: Awaited<ReturnType<typeof prisma.expenseCategory.findMany>>;
+  let goals: GoalRow[];
+  let allocatedByCategory: Awaited<ReturnType<typeof getAllocatedByCategoryForMonth>>;
+
+  try {
+    const result = await Promise.all([
+      prisma.expense.findMany({
+        where: { userId: session.user.id, monthId },
+        include: { category: true },
+      }),
+      prisma.savingContribution.findMany({
+        where: {
+          savingGoal: { userId: session.user.id },
+          monthId,
+        },
+        include: {
+          savingGoal: {
+            select: {
+              // @ts-expect-error savingType au schéma Prisma, client généré peut être en retard
+              savingType: true,
+            },
+          },
+        },
+      }),
+      prisma.investment.findMany({
+        where: {
+          userId: session.user.id,
+          date: { gte: start, lt: end },
+        },
+      }),
+      prisma.expenseCategory.findMany({
+        where: { userId: session.user.id, monthId },
+      }),
+      prisma.savingGoal.findMany({
+        where: { userId: session.user.id },
+      }),
+      getAllocatedByCategoryForMonth(session.user.id, monthId),
+    ]);
+    [expenses, contributions, investments, categories, goals, allocatedByCategory] = result;
+  } catch (err: unknown) {
+    const isP2022 =
+      err &&
+      typeof err === "object" &&
+      "code" in err &&
+      (err as { code?: string }).code === "P2022";
+    if (!isP2022) throw err;
+    // Colonne savingType absente (migration non appliquée) : requêtes sans ce champ
+    const fallback = await Promise.all([
       prisma.expense.findMany({
         where: { userId: session.user.id, monthId },
         include: { category: true },
@@ -64,9 +129,17 @@ export async function GET(request: Request) {
       }),
       prisma.savingGoal.findMany({
         where: { userId: session.user.id },
+        select: { label: true, currentAmount: true, targetAmount: true },
       }),
       getAllocatedByCategoryForMonth(session.user.id, monthId),
     ]);
+    expenses = fallback[0];
+    contributions = fallback[1].map((c) => ({ amount: c.amount, savingGoal: null }));
+    investments = fallback[2];
+    categories = fallback[3];
+    goals = fallback[4] as GoalRow[];
+    allocatedByCategory = fallback[5];
+  }
 
   const revenues = await prisma.revenue.findMany({
     where: { userId: session.user.id, monthId },
@@ -75,6 +148,14 @@ export async function GET(request: Request) {
   const totalRevenues = revenues.reduce((s, r) => s + r.amount, 0);
   const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
   const totalSavings = contributions.reduce((s, c) => s + c.amount, 0);
+  const savingsByType = contributions.reduce(
+    (acc, c) => {
+      const t = c.savingGoal?.savingType === "EMERGENCY" ? "emergency" : "target";
+      acc[t] += c.amount;
+      return acc;
+    },
+    { target: 0, emergency: 0 }
+  );
   const totalInvestments = investments.reduce((s, i) => s + i.amount, 0);
   const remainingToLive = totalRevenues - totalExpenses;
   const savingsRate =
@@ -121,6 +202,7 @@ export async function GET(request: Request) {
 
   const goalsProgress = goals.map((g) => ({
     label: g.label,
+    savingType: (g.savingType === "EMERGENCY" ? "EMERGENCY" : "TARGET") as "TARGET" | "EMERGENCY",
     current: g.currentAmount,
     target: g.targetAmount,
     percent:
@@ -134,6 +216,7 @@ export async function GET(request: Request) {
     totalRevenues,
     totalExpenses,
     totalSavings,
+    savingsByType,
     totalInvestments,
     savingsRate,
     remainingToLive,

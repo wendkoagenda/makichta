@@ -13,6 +13,9 @@ export async function updateSavingGoal(
     where: { id, userId },
     data: {
       ...(input.label != null && { label: input.label }),
+      ...(input.savingType != null && {
+        savingType: input.savingType === "EMERGENCY" ? "EMERGENCY" : "TARGET",
+      }),
       ...(input.targetAmount != null && {
         targetAmount: Math.max(0, input.targetAmount),
       }),
@@ -37,6 +40,7 @@ export async function updateSavingGoal(
   return {
     id: updated.id,
     label: updated.label,
+    savingType: updated.savingType === "EMERGENCY" ? "EMERGENCY" : "TARGET",
     targetAmount: Number(updated.targetAmount),
     currentAmount: Number(updated.currentAmount),
     deadline: updated.deadline?.toISOString().slice(0, 10) ?? null,

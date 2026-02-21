@@ -5,11 +5,23 @@ export interface AllocationRuleCategory {
   label: string;
 }
 
+export interface AllocationRuleSavingGoal {
+  id: string;
+  label: string;
+}
+
+export type AllocationRuleType = "PERCENT" | "AMOUNT";
+
 export interface AllocationRule {
   id: string;
   label: string;
+  allocationType: AllocationRuleType;
   percentage: number;
+  amount: number | null;
   monthId: string;
+  calculatedAmount?: number;
+  savingGoalId?: string | null;
+  savingGoal?: AllocationRuleSavingGoal | null;
   categoryIds?: string[];
   categories?: AllocationRuleCategory[];
 }

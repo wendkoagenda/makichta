@@ -3,6 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 export interface SavingGoal {
   id: string;
   label: string;
+  savingType: "TARGET" | "EMERGENCY";
   targetAmount: number;
   currentAmount: number;
   deadline: string | null;

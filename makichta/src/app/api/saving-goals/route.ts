@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { label, targetAmount, deadline, priority, projectId } = body;
+    const { label, savingType, targetAmount, deadline, priority, projectId } = body;
 
     if (!label) {
       return NextResponse.json(
@@ -45,6 +45,7 @@ export async function POST(request: Request) {
 
     const goal = await createSavingGoal(session.user.id, {
       label: String(label).trim(),
+      savingType: savingType === "EMERGENCY" ? "EMERGENCY" : "TARGET",
       targetAmount: targetAmount != null ? Math.max(0, Number(targetAmount)) : 0,
       deadline: deadline || null,
       priority: priority === "HIGH" || priority === "LOW" ? priority : "MEDIUM",

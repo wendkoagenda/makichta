@@ -20,16 +20,20 @@ export async function PUT(
 
   try {
     const body = await request.json();
-    const { label, targetAmount, deadline, priority, projectId } = body;
+    const { label, savingType, targetAmount, deadline, priority, projectId } = body;
 
     const updates: {
       label?: string;
+      savingType?: "TARGET" | "EMERGENCY";
       targetAmount?: number;
       deadline?: string | null;
       priority?: "HIGH" | "MEDIUM" | "LOW";
       projectId?: string | null;
     } = {};
     if (label != null) updates.label = String(label).trim();
+    if (savingType != null && (savingType === "EMERGENCY" || savingType === "TARGET")) {
+      updates.savingType = savingType;
+    }
     if (targetAmount != null) updates.targetAmount = Math.max(0, Number(targetAmount));
     if (deadline !== undefined) updates.deadline = deadline || null;
     if (priority != null && ["HIGH", "MEDIUM", "LOW"].includes(priority)) {

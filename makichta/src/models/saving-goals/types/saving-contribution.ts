@@ -12,4 +12,6 @@ export interface CreateSavingContributionInput {
   amount: number;
   date: string;
   isAutomatic?: boolean;
+  /** Lorsque créée automatiquement depuis une répartition (allocation), pour pouvoir annuler au recalcul du revenu */
+  revenueId?: string | null;
 }

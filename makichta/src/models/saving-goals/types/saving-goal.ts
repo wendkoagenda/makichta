@@ -1,8 +1,12 @@
 export type GoalPriority = "HIGH" | "MEDIUM" | "LOW";
 
+/** TARGET = épargne destinée à une dépense prévue, EMERGENCY = fonds de secours */
+export type SavingGoalType = "TARGET" | "EMERGENCY";
+
 export interface SavingGoal {
   id: string;
   label: string;
+  savingType: SavingGoalType;
   targetAmount: number;
   currentAmount: number;
   deadline: string | null;
@@ -15,6 +19,7 @@ export interface SavingGoal {
 
 export interface CreateSavingGoalInput {
   label: string;
+  savingType?: SavingGoalType;
   targetAmount: number;
   deadline?: string | null;
   priority?: GoalPriority;
@@ -23,6 +28,7 @@ export interface CreateSavingGoalInput {
 
 export interface UpdateSavingGoalInput {
   label?: string;
+  savingType?: SavingGoalType;
   targetAmount?: number;
   deadline?: string | null;
   priority?: GoalPriority;

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { useAllocationRules } from "../hooks/use-allocation-rules";
+import { useCurrency } from "@/models/settings/hooks/use-currency";
 import { AllocationRuleForm } from "./allocation-rule-form";
 import { Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 
@@ -23,21 +24,28 @@ export function AllocationRuleList() {
     deleteRule,
     seedDefaults,
   } = useAllocationRules();
+  const { convertAndFormat } = useCurrency();
   const [monthId, setMonthId] = useState(getCurrentMonthId);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
 
-  const totalPercent = rules.reduce((s, r) => s + r.percentage, 0);
+  const totalPercent = rules
+    .filter((r) => r.allocationType === "PERCENT")
+    .reduce((s, r) => s + r.percentage, 0);
 
   const handleCreate = async (data: {
     label: string;
+    allocationType: "PERCENT" | "AMOUNT";
     percentage: number;
+    amount: number | null;
     expenseCategoryIds?: string[];
+    savingGoalId?: string | null;
   }) => {
     const result = await createRule({ ...data, monthId });
     if (result) {
       setShowAddForm(false);
+      fetchRules(monthId);
       return true;
     }
     return false;
@@ -45,11 +53,19 @@ export function AllocationRuleList() {
 
   const handleUpdate = async (
     id: string,
-    data: { label: string; percentage: number; expenseCategoryIds?: string[] }
+    data: {
+      label: string;
+      allocationType: "PERCENT" | "AMOUNT";
+      percentage: number;
+      amount: number | null;
+      expenseCategoryIds?: string[];
+      savingGoalId?: string | null;
+    }
   ) => {
     const result = await updateRule(id, data);
     if (result) {
       setEditingId(null);
+      fetchRules(monthId);
       return true;
     }
     return false;
@@ -143,11 +159,15 @@ export function AllocationRuleList() {
           <>
             {rules.length > 0 && (
               <p className="text-sm text-muted-foreground">
-                Total : <strong>{totalPercent.toFixed(1)} %</strong>
-                {totalPercent !== 100 && (
-                  <span className="ml-1 text-amber-500">
-                    (recommandé : 100 %)
-                  </span>
+                {rules.some((r) => r.allocationType === "PERCENT") && (
+                  <>
+                    Total pourcentages : <strong>{totalPercent.toFixed(1)} %</strong>
+                    {totalPercent !== 100 && (
+                      <span className="ml-1 text-amber-500">
+                        (recommandé : 100 %)
+                      </span>
+                    )}
+                  </>
                 )}
               </p>
             )}
@@ -171,16 +191,30 @@ export function AllocationRuleList() {
                       <div>
                         <p className="font-medium">{r.label}</p>
                         <p className="text-xs text-muted-foreground">
-                          {r.percentage} % des revenus
+                          {r.allocationType === "AMOUNT"
+                            ? `Montant fixe : ${r.amount != null ? convertAndFormat(r.amount) : "0"}`
+                            : `${r.percentage} % des revenus`}
                           {r.categories && r.categories.length > 0 && (
                             <>
                               {" · "}
-                              Lié à : {r.categories.map((c) => c.label).join(", ")}
+                              Catégories : {r.categories.map((c) => c.label).join(", ")}
+                            </>
+                          )}
+                          {r.savingGoal && (
+                            <>
+                              {" · "}
+                              Objectif : {r.savingGoal.label}
                             </>
                           )}
                         </p>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex items-center gap-2">
+                        {r.calculatedAmount != null && (
+                          <span className="text-sm font-medium tabular-nums">
+                            {convertAndFormat(r.calculatedAmount)}
+                          </span>
+                        )}
+                        <div className="flex gap-1">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -199,6 +233,7 @@ export function AllocationRuleList() {
                         >
                           <Trash2 size={16} />
                         </Button>
+                        </div>
                       </div>
                     </>
                   )}

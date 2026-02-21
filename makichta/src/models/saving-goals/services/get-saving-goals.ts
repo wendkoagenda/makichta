@@ -27,6 +27,7 @@ export async function getSavingGoals(
   return rows.map((r) => ({
     id: r.id,
     label: r.label,
+    savingType: (r.savingType === "EMERGENCY" ? "EMERGENCY" : "TARGET") as "TARGET" | "EMERGENCY",
     targetAmount: Number(r.targetAmount),
     currentAmount: Number(r.currentAmount),
     deadline: r.deadline?.toISOString().slice(0, 10) ?? null,
