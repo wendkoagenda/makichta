@@ -17,7 +17,10 @@ import { PRIORITY_LABELS } from "../constants/priority-labels";
 import { SAVING_TYPE_LABELS } from "../constants/saving-type-labels";
 import type { SavingGoal } from "../types/saving-goal";
 import type { SavingContribution } from "../types/saving-contribution";
-import { Pencil, Plus, PiggyBank, Trash2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Pencil, Plus, Minus, PiggyBank, Trash2, CheckCircle2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface SavingGoalCardProps {
   goal: SavingGoal;
@@ -35,6 +38,7 @@ interface SavingGoalCardProps {
   ) => Promise<boolean>;
   onDelete: (id: string) => Promise<void>;
   onContribution: () => void;
+  onValidate?: () => void;
 }
 
 export function SavingGoalCard({
@@ -43,17 +47,41 @@ export function SavingGoalCard({
   onUpdate,
   onDelete,
   onContribution,
+  onValidate,
 }: SavingGoalCardProps) {
   const { convertAndFormat } = useCurrency();
   const [editing, setEditing] = useState(false);
   const [contributions, setContributions] = useState<SavingContribution[]>([]);
   const [contribDialogOpen, setContribDialogOpen] = useState(false);
+  const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
+  const [validateDialogOpen, setValidateDialogOpen] = useState(false);
+  const [validateCreateAsset, setValidateCreateAsset] = useState(true);
+  const [validateDepreciationMonths, setValidateDepreciationMonths] = useState(60);
+  const [isValidating, setIsValidating] = useState(false);
 
+  const targetForBar =
+    (goal.allocatedThisMonth != null && goal.allocatedThisMonth > 0)
+      ? goal.allocatedThisMonth
+      : goal.targetAmount;
+  const currentForBar =
+    (goal.contributionsThisMonth != null && targetForBar === goal.allocatedThisMonth)
+      ? goal.contributionsThisMonth
+      : goal.currentAmount;
   const progressPercent =
-    goal.targetAmount > 0
-      ? Math.min(100, (goal.currentAmount / goal.targetAmount) * 100)
+    targetForBar > 0
+      ? Math.min(100, (currentForBar / targetForBar) * 100)
       : 0;
-  const remaining = Math.max(0, goal.targetAmount - goal.currentAmount);
+  const remaining = Math.max(0, targetForBar - currentForBar);
+  const isMonthlyScope = targetForBar === goal.allocatedThisMonth && (goal.allocatedThisMonth ?? 0) > 0;
+
+  const restantTotal = Math.max(0, goal.targetAmount - goal.currentAmount);
+  const monthsToTarget =
+    goal.targetAmount > 0 &&
+    (goal.allocatedThisMonth ?? 0) > 0 &&
+    restantTotal > 0
+      ? Math.ceil(restantTotal / (goal.allocatedThisMonth ?? 1))
+      : null;
+  const isTargetReached = goal.targetAmount > 0 && restantTotal <= 0;
 
   useEffect(() => {
     fetch(`/api/saving-goals/${goal.id}/contributions`)
@@ -66,6 +94,40 @@ export function SavingGoalCard({
     setContribDialogOpen(false);
     onContribution();
   };
+
+  const handleRemoveContribution = async (contributionId: string) => {
+    if (!confirm("Retirer cette contribution automatique ? Le montant sera enlevé de l’objectif.")) return;
+    const res = await fetch(`/api/saving-goals/contributions/${contributionId}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      setContributions((prev) => prev.filter((c) => c.id !== contributionId));
+      onContribution();
+    }
+  };
+
+  const handleValidate = async () => {
+    setIsValidating(true);
+    try {
+      const res = await fetch(`/api/saving-goals/${goal.id}/validate`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          createAsset: validateCreateAsset,
+          depreciationDurationMonths: validateDepreciationMonths,
+          acquisitionDate: new Date().toISOString().slice(0, 10),
+        }),
+      });
+      if (res.ok) {
+        setValidateDialogOpen(false);
+        onValidate?.();
+      }
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const isActive = goal.status !== "COMPLETED";
 
   return (
     <Card className="min-w-0">
@@ -84,7 +146,13 @@ export function SavingGoalCard({
             </span>
           </div>
           <p className="text-xs text-muted-foreground break-words">
-            {PRIORITY_LABELS[goal.priority]} · Cible : {convertAndFormat(goal.targetAmount)}
+            {PRIORITY_LABELS[goal.priority]}
+            {isMonthlyScope && (
+              <> · Prévu ce mois : {convertAndFormat(goal.allocatedThisMonth!)}</>
+            )}
+            {!isMonthlyScope && goal.targetAmount <= 0 && (
+              <> · Cible : {convertAndFormat(goal.targetAmount)}</>
+            )}
             {goal.deadline && ` · Échéance ${goal.deadline}`}
           </p>
         </div>
@@ -106,6 +174,29 @@ export function SavingGoalCard({
               />
             </DialogContent>
           </Dialog>
+          {goal.savingType === "EMERGENCY" && isActive && (
+            <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" title="Retrait">
+                  <Minus size={16} />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Retrait · {goal.label}</DialogTitle>
+                </DialogHeader>
+                <ContributionForm
+                  savingGoalId={goal.id}
+                  mode="withdrawal"
+                  onSubmit={() => {
+                    setWithdrawDialogOpen(false);
+                    onContribution();
+                  }}
+                  onCancel={() => setWithdrawDialogOpen(false)}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -113,6 +204,59 @@ export function SavingGoalCard({
           >
             <Pencil size={16} />
           </Button>
+          {isTargetReached && isActive && (
+            <Dialog open={validateDialogOpen} onOpenChange={setValidateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="default" size="sm" title="Valider l'achat (archiver l'objectif)">
+                  <CheckCircle2 size={16} className="mr-1" />
+                  Valider l'achat
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Valider l&apos;objectif · {goal.label}</DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground">
+                  L&apos;objectif sera archivé et le montant retiré de l&apos;épargne totale.
+                </p>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    id="validate-create-asset"
+                    checked={validateCreateAsset}
+                    onChange={(e) => setValidateCreateAsset(e.target.checked)}
+                    className={cn(
+                      "h-4 w-4 rounded border border-input accent-primary",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    )}
+                  />
+                  <Label htmlFor="validate-create-asset" className="text-sm font-normal cursor-pointer">
+                    Créer un actif dans Actifs & passifs ({convertAndFormat(goal.targetAmount)})
+                  </Label>
+                </label>
+                {validateCreateAsset && (
+                  <div className="space-y-2">
+                    <Label htmlFor="validate-depreciation">Durée d&apos;amortissement (mois)</Label>
+                    <Input
+                      id="validate-depreciation"
+                      type="number"
+                      min={1}
+                      value={validateDepreciationMonths}
+                      onChange={(e) => setValidateDepreciationMonths(parseInt(e.target.value, 10) || 60)}
+                    />
+                  </div>
+                )}
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setValidateDialogOpen(false)}>
+                    Annuler
+                  </Button>
+                  <Button onClick={handleValidate} disabled={isValidating}>
+                    {isValidating ? "Validation…" : "Valider"}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -141,12 +285,31 @@ export function SavingGoalCard({
           />
         ) : (
           <>
+            {(goal.targetAmount > 0 || monthsToTarget != null || isTargetReached) && (
+              <div className="flex flex-wrap gap-2">
+                {goal.targetAmount > 0 && (
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary">
+                    Cible : {convertAndFormat(goal.targetAmount)}
+                  </span>
+                )}
+                {isTargetReached ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500/15 px-2.5 py-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                    Objectif atteint
+                  </span>
+                ) : monthsToTarget != null ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-500/15 px-2.5 py-1 text-sm font-semibold text-amber-700 dark:text-amber-400">
+                    ~{monthsToTarget} mois restants
+                  </span>
+                ) : null}
+              </div>
+            )}
             <div className="flex items-center gap-2 min-w-0">
               <PiggyBank className="h-5 w-5 shrink-0 text-primary/70" />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap justify-between gap-x-2 text-sm mb-1">
                   <span className="text-muted-foreground truncate min-w-0">
-                    {convertAndFormat(goal.currentAmount)} / {convertAndFormat(goal.targetAmount)}
+                    {convertAndFormat(currentForBar)} / {convertAndFormat(targetForBar)}
+                    {isMonthlyScope && " (ce mois)"}
                   </span>
                   <span className="font-medium shrink-0">
                     {progressPercent.toFixed(0)} %
@@ -161,7 +324,8 @@ export function SavingGoalCard({
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              Reste à épargner : <strong className="text-foreground">{convertAndFormat(remaining)}</strong>
+              {isMonthlyScope ? "Reste à épargner ce mois : " : "Reste à épargner : "}
+              <strong className="text-foreground">{convertAndFormat(remaining)}</strong>
             </p>
             {contributions.length > 0 && (
               <details className="text-xs">
@@ -170,9 +334,21 @@ export function SavingGoalCard({
                 </summary>
                 <ul className="mt-1 space-y-1 pl-2">
                   {contributions.slice(0, 5).map((c) => (
-                    <li key={c.id}>
-                      {c.date} · +{convertAndFormat(c.amount)}
-                      {c.isAutomatic && " (auto)"}
+                    <li key={c.id} className="flex items-center justify-between gap-2">
+                      <span className={c.amount < 0 ? "text-destructive" : undefined}>
+                        {c.date} · {c.amount >= 0 ? "+" : ""}{convertAndFormat(c.amount)}
+                        {c.isAutomatic && " (auto)"}
+                      </span>
+                      {c.isAutomatic && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs text-destructive hover:text-destructive"
+                          onClick={() => handleRemoveContribution(c.id)}
+                        >
+                          Retirer
+                        </Button>
+                      )}
                     </li>
                   ))}
                   {contributions.length > 5 && (

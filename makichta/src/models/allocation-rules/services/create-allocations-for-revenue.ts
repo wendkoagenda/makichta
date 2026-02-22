@@ -58,22 +58,51 @@ export async function createAllocationsForRevenue(
     return Math.round(amount * (rule.percentage / 100) * 100) / 100;
   };
 
+  const effectiveAmounts: number[] = [];
+  for (const rule of rules) {
+    const amt = allocationAmount(rule);
+    if (!rule.savingGoalId || amt <= 0) {
+      effectiveAmounts.push(amt);
+      continue;
+    }
+    const goal = await prisma.savingGoal.findFirst({
+      where: { id: rule.savingGoalId, userId, status: "ACTIVE" },
+      select: { targetAmount: true, currentAmount: true },
+    });
+    if (!goal) {
+      effectiveAmounts.push(amt);
+      continue;
+    }
+    const target = Number(goal.targetAmount);
+    const current = Number(goal.currentAmount);
+    if (target > 0 && current >= target) {
+      effectiveAmounts.push(0);
+    } else if (target > 0) {
+      const remaining = target - current;
+      const effective = Math.min(amt, remaining);
+      effectiveAmounts.push(Math.round(effective * 100) / 100);
+    } else {
+      effectiveAmounts.push(amt);
+    }
+  }
+
   await prisma.allocation.createMany({
-    data: rules.map((rule) => ({
+    data: rules.map((rule, i) => ({
       revenueId,
       ruleId: rule.id,
       monthId,
-      amount: allocationAmount(rule),
+      amount: effectiveAmounts[i],
     })),
   });
 
   const dateStr = revenueDate.toISOString().slice(0, 10);
-  for (const rule of rules) {
-    const amt = allocationAmount(rule);
-    if (rule.savingGoalId && amt > 0) {
+  for (let i = 0; i < rules.length; i++) {
+    const rule = rules[i];
+    const effectiveAmt = effectiveAmounts[i];
+    if (rule.savingGoalId && effectiveAmt > 0) {
       await createSavingContribution(userId, {
         savingGoalId: rule.savingGoalId,
-        amount: amt,
+        amount: effectiveAmt,
         date: dateStr,
         isAutomatic: true,
         revenueId: revenueId,

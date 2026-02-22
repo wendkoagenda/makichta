@@ -4,6 +4,8 @@ import type { SavingGoal } from "../types/saving-goal";
 export interface GetSavingGoalsOptions {
   userId: string;
   projectId?: string | null;
+  /** Par défaut non fourni = tous. "ACTIVE" = objectifs en cours, "COMPLETED" = archivés */
+  status?: "ACTIVE" | "COMPLETED";
 }
 
 export async function getSavingGoals(
@@ -12,10 +14,14 @@ export async function getSavingGoals(
   const userId = typeof options === "string" ? options : options.userId;
   const projectId =
     typeof options === "string" ? undefined : options.projectId;
+  const status = typeof options === "string" ? undefined : options.status;
 
-  const where: { userId: string; projectId?: string | null } = { userId };
+  const where: { userId: string; projectId?: string | null; status?: string } = { userId };
   if (projectId !== undefined) {
     where.projectId = projectId;
+  }
+  if (status !== undefined) {
+    where.status = status;
   }
 
   const rows = await prisma.savingGoal.findMany({
@@ -30,6 +36,7 @@ export async function getSavingGoals(
     savingType: (r.savingType === "EMERGENCY" ? "EMERGENCY" : "TARGET") as "TARGET" | "EMERGENCY",
     targetAmount: Number(r.targetAmount),
     currentAmount: Number(r.currentAmount),
+    status: (r.status === "COMPLETED" ? "COMPLETED" : "ACTIVE") as "ACTIVE" | "COMPLETED",
     deadline: r.deadline?.toISOString().slice(0, 10) ?? null,
     priority: r.priority as "HIGH" | "MEDIUM" | "LOW",
     projectId: r.projectId ?? undefined,

@@ -519,6 +519,17 @@ export default function DashboardPage() {
 
   useEffect(
     function () {
+      const onVisibility = () => {
+        if (document.visibilityState === "visible" && !showAnnual) fetchData(monthId);
+      };
+      document.addEventListener("visibilitychange", onVisibility);
+      return () => document.removeEventListener("visibilitychange", onVisibility);
+    },
+    [monthId, fetchData, showAnnual]
+  );
+
+  useEffect(
+    function () {
       if (!showAnnual) return;
       fetch("/api/dashboard/annual?year=" + year)
         .then(function (r) {

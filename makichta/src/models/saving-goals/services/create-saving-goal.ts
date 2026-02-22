@@ -27,6 +27,7 @@ export async function createSavingGoal(
     savingType: row.savingType === "EMERGENCY" ? "EMERGENCY" : "TARGET",
     targetAmount: Number(row.targetAmount),
     currentAmount: Number(row.currentAmount),
+    status: (row.status === "COMPLETED" ? "COMPLETED" : "ACTIVE") as "ACTIVE" | "COMPLETED",
     deadline: row.deadline?.toISOString().slice(0, 10) ?? null,
     priority: row.priority as "HIGH" | "MEDIUM" | "LOW",
     projectId: row.projectId ?? undefined,

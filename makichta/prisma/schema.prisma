@@ -184,6 +184,7 @@ model SavingGoal {
   savingType    String    @default("TARGET") // "TARGET" = dépense prévue, "EMERGENCY" = fonds de secours
   targetAmount  Float
   currentAmount Float     @default(0)
+  status        String    @default("ACTIVE") // "ACTIVE" | "COMPLETED" (archivé après validation)
   deadline      DateTime?
   priority      String    @default("MEDIUM")
   createdAt     DateTime  @default(now())
@@ -197,6 +198,7 @@ model SavingGoal {
 
   @@index([userId])
   @@index([projectId])
+  @@index([userId, status])
 }
 
 model SavingContribution {

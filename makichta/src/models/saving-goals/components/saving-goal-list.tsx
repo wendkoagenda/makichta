@@ -17,7 +17,8 @@ import { SavingGoalCard } from "./saving-goal-card";
 import { SavingProjectCard } from "@/models/saving-projects/components/saving-project-card";
 import { SavingProjectForm } from "@/models/saving-projects/components/saving-project-form";
 import type { SavingGoal } from "../types/saving-goal";
-import { Plus, FolderPlus } from "lucide-react";
+import { Plus, FolderPlus, Archive } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function SavingGoalList() {
   const {
@@ -39,11 +40,23 @@ export function SavingGoalList() {
 
   const [newGoalDialogOpen, setNewGoalDialogOpen] = useState(false);
   const [newProjectDialogOpen, setNewProjectDialogOpen] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => {
-    fetchGoals();
+    fetchGoals(undefined, showArchived ? undefined : "ACTIVE");
     fetchProjects();
-  }, [fetchGoals, fetchProjects]);
+  }, [fetchGoals, fetchProjects, showArchived]);
+
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        fetchGoals(undefined, showArchived ? undefined : "ACTIVE");
+        fetchProjects();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [fetchGoals, fetchProjects, showArchived]);
 
   const goalsByProject = new Map<string | null, SavingGoal[]>();
   goalsByProject.set(null, []);
@@ -94,7 +107,22 @@ export function SavingGoalList() {
     <div className="space-y-8">
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
-          <CardTitle>Épargne</CardTitle>
+          <div className="flex flex-wrap items-center gap-4">
+            <CardTitle>Épargne</CardTitle>
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={showArchived}
+                onChange={(e) => setShowArchived(e.target.checked)}
+                className={cn(
+                  "h-4 w-4 rounded border border-input accent-primary",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                )}
+              />
+              <Archive size={14} />
+              Inclure les archivés
+            </label>
+          </div>
           <div className="flex gap-2">
             <Dialog open={newProjectDialogOpen} onOpenChange={setNewProjectDialogOpen}>
               <DialogTrigger asChild>
@@ -169,7 +197,8 @@ export function SavingGoalList() {
                   await deleteGoal(id);
                   fetchGoals();
                 }}
-                onContribution={fetchGoals}
+                onContribution={() => fetchGoals(undefined, showArchived ? undefined : "ACTIVE")}
+                onValidate={() => fetchGoals(undefined, showArchived ? undefined : "ACTIVE")}
               />
             );
           })}
@@ -215,9 +244,10 @@ export function SavingGoalList() {
                       }}
                       onDelete={async (id) => {
                         await deleteGoal(id);
-                        fetchGoals();
+                        fetchGoals(undefined, showArchived ? undefined : "ACTIVE");
                       }}
-                      onContribution={fetchGoals}
+                      onContribution={() => fetchGoals(undefined, showArchived ? undefined : "ACTIVE")}
+                      onValidate={() => fetchGoals(undefined, showArchived ? undefined : "ACTIVE")}
                     />
                   ))}
                 </div>

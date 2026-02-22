@@ -1,14 +1,13 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getCurrentMonthId } from "@/models/months/services/get-months";
+import {
+  REPARTITION_RULES,
+  SAVING_GOAL_LABELS,
+  SAVING_GOAL_EMERGENCY_LABEL,
+} from "@/lib/constants/repartition";
 import type { AllocationRule } from "../types/allocation-rule";
-
-const DEFAULT_RULES = [
-  { label: "Épargne", percentage: 20 },
-  { label: "Charges fixes", percentage: 40 },
-  { label: "Loisirs", percentage: 15 },
-  { label: "Investissement", percentage: 10 },
-  { label: "Alimentation", percentage: 15 },
-];
+import { getAllocationRules } from "./get-allocation-rules";
 
 export async function seedDefaultAllocationRules(
   userId: string,
@@ -19,34 +18,70 @@ export async function seedDefaultAllocationRules(
   const existing = await prisma.allocationRule.findFirst({
     where: { userId, monthId: targetMonthId },
   });
-  if (existing) return [];
+  if (existing) return getAllocationRules(userId, targetMonthId);
 
-  await prisma.allocationRule.createMany({
-    data: DEFAULT_RULES.map((r) => ({
-      userId,
-      label: r.label,
-      allocationType: "PERCENT",
-      percentage: r.percentage,
-      monthId: targetMonthId,
-    })),
-  });
-
-  const created = (await prisma.allocationRule.findMany({
+  const categories = await prisma.expenseCategory.findMany({
     where: { userId, monthId: targetMonthId },
-    orderBy: { createdAt: "asc" },
-    include: { categories: { select: { id: true, label: true } } },
-  })) as unknown as { id: string; label: string; allocationType: string; percentage: number; amount: number | null; monthId: string; createdAt: Date; updatedAt: Date; categories: { id: string; label: string }[] }[];
+    select: { id: true, label: true },
+  });
+  const categoryByLabel = new Map(categories.map((c) => [c.label, c.id]));
 
-  return created.map((r) => ({
-    id: r.id,
-    label: r.label,
-    allocationType: r.allocationType === "AMOUNT" ? "AMOUNT" : "PERCENT",
-    percentage: r.percentage,
-    amount: r.amount ?? null,
-    monthId: r.monthId,
-    categoryIds: r.categories.map((c) => c.id),
-    categories: r.categories.map((c) => ({ id: c.id, label: c.label })),
-    createdAt: r.createdAt?.toISOString(),
-    updatedAt: r.updatedAt?.toISOString(),
-  }));
+  const projects = await Promise.all(
+    SAVING_GOAL_LABELS.map((label) =>
+      prisma.savingProject.create({
+        data: { userId, label },
+      })
+    )
+  );
+  const projectByLabel = new Map(projects.map((p) => [p.label, p.id]));
+
+  const goals = await Promise.all(
+    SAVING_GOAL_LABELS.map((label) => {
+      const projectId = projectByLabel.get(label);
+      const savingType =
+        label === SAVING_GOAL_EMERGENCY_LABEL ? "EMERGENCY" : "TARGET";
+      return prisma.savingGoal.create({
+        data: {
+          userId,
+          label,
+          savingType,
+          targetAmount: 0,
+          ...(projectId && { projectId }),
+        } as Prisma.SavingGoalUncheckedCreateInput,
+      });
+    })
+  );
+  const goalByLabel = new Map(goals.map((g) => [g.label, g.id]));
+
+  for (const rule of REPARTITION_RULES) {
+    if (rule.type === "category") {
+      const categoryId = categoryByLabel.get(rule.label);
+      await prisma.allocationRule.create({
+        data: {
+          userId,
+          label: rule.label,
+          allocationType: "PERCENT",
+          percentage: rule.percentage,
+          monthId: targetMonthId,
+          ...(categoryId && {
+            categories: { connect: [{ id: categoryId }] },
+          }),
+        } as Parameters<typeof prisma.allocationRule.create>[0]["data"],
+      });
+    } else {
+      const savingGoalId = goalByLabel.get(rule.label);
+      await prisma.allocationRule.create({
+        data: {
+          userId,
+          label: rule.label,
+          allocationType: "PERCENT",
+          percentage: rule.percentage,
+          monthId: targetMonthId,
+          ...(savingGoalId && { savingGoalId }),
+        } as Parameters<typeof prisma.allocationRule.create>[0]["data"],
+      });
+    }
+  }
+
+  return getAllocationRules(userId, targetMonthId);
 }

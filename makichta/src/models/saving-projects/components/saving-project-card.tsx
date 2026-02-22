@@ -48,6 +48,7 @@ interface SavingProjectCardProps {
   ) => Promise<boolean>;
   onDeleteGoal: (id: string) => Promise<void>;
   onContribution: () => void;
+  onValidate?: () => void;
 }
 
 export function SavingProjectCard({
@@ -60,6 +61,7 @@ export function SavingProjectCard({
   onUpdateGoal,
   onDeleteGoal,
   onContribution,
+  onValidate,
 }: SavingProjectCardProps) {
   const { convertAndFormat } = useCurrency();
   const [editProjectOpen, setEditProjectOpen] = useState(false);
@@ -167,6 +169,7 @@ export function SavingProjectCard({
               }}
               onDelete={onDeleteGoal}
               onContribution={onContribution}
+              onValidate={onValidate}
             />
           ))}
         </div>

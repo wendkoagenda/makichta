@@ -42,19 +42,19 @@ export function SavingGoalForm({
 }: SavingGoalFormProps) {
   const [label, setLabel] = useState(goal?.label ?? "");
   const [savingType, setSavingType] = useState<SavingGoalType>(
-    goal?.savingType ?? "TARGET"
+    goal?.savingType ?? "TARGET",
   );
   const [targetAmount, setTargetAmount] = useState(
-    goal?.targetAmount != null ? String(goal.targetAmount) : ""
+    goal?.targetAmount != null ? String(goal.targetAmount) : "",
   );
   const [deadline, setDeadline] = useState(goal?.deadline ?? "");
   const [priority, setPriority] = useState<GoalPriority>(
-    goal?.priority ?? "MEDIUM"
+    goal?.priority ?? "MEDIUM",
   );
   /** Valeur sentinelle pour "Sans projet" (Radix Select n'accepte pas value="") */
   const NONE_PROJECT = "__none__";
   const [projectId, setProjectId] = useState<string | "">(
-    initialProjectId ?? goal?.projectId ?? ""
+    initialProjectId ?? goal?.projectId ?? "",
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -127,7 +127,7 @@ export function SavingGoalForm({
         </Select>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="goal-target">Montant cible (USDT)</Label>
+        <Label htmlFor="goal-target">Somme totale à atteindre (USDT)</Label>
         <Input
           id="goal-target"
           type="number"
@@ -135,7 +135,7 @@ export function SavingGoalForm({
           min="0"
           value={targetAmount}
           onChange={(e) => setTargetAmount(e.target.value)}
-          placeholder="0"
+          placeholder="Somme totale à atteindre"
         />
       </div>
       <div className="space-y-2">

@@ -17,12 +17,13 @@ export async function createSavingContribution(
   const date = new Date(input.date);
   const monthId = getMonthIdFromDate(date);
 
+  const amount = input.amount;
   const [contribution] = await prisma.$transaction([
     prisma.savingContribution.create({
       data: {
         savingGoalId: input.savingGoalId,
         monthId,
-        amount: Math.max(0, input.amount),
+        amount,
         date,
         isAutomatic: input.isAutomatic ?? false,
         revenueId: input.revenueId ?? undefined,
@@ -31,9 +32,7 @@ export async function createSavingContribution(
     prisma.savingGoal.update({
       where: { id: input.savingGoalId },
       data: {
-        currentAmount: {
-          increment: Math.max(0, input.amount),
-        },
+        currentAmount: amount >= 0 ? { increment: amount } : { decrement: Math.abs(amount) },
       },
     }),
   ]);

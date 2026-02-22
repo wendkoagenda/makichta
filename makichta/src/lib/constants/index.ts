@@ -23,11 +23,9 @@ export const PRIORITIES = {
   LOW: "LOW",
 } as const;
 
+/** Catégories de dépenses pour la répartition 8 postes (Essentiel, Dimes, Loisirs). */
 export const DEFAULT_EXPENSE_CATEGORIES = [
-  { label: "Loyer", type: EXPENSE_TYPES.FIXED },
-  { label: "Abonnements", type: EXPENSE_TYPES.FIXED },
-  { label: "Assurances", type: EXPENSE_TYPES.FIXED },
-  { label: "Alimentation", type: EXPENSE_TYPES.VARIABLE },
-  { label: "Transport", type: EXPENSE_TYPES.VARIABLE },
+  { label: "Essentiel", type: EXPENSE_TYPES.FIXED },
   { label: "Loisirs", type: EXPENSE_TYPES.VARIABLE },
+  { label: "Dimes", type: EXPENSE_TYPES.VARIABLE },
 ];

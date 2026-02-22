@@ -43,6 +43,7 @@ export async function updateSavingGoal(
     savingType: updated.savingType === "EMERGENCY" ? "EMERGENCY" : "TARGET",
     targetAmount: Number(updated.targetAmount),
     currentAmount: Number(updated.currentAmount),
+    status: (updated.status === "COMPLETED" ? "COMPLETED" : "ACTIVE") as "ACTIVE" | "COMPLETED",
     deadline: updated.deadline?.toISOString().slice(0, 10) ?? null,
     priority: updated.priority as "HIGH" | "MEDIUM" | "LOW",
     projectId: updated.projectId ?? undefined,
