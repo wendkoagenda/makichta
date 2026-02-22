@@ -11,9 +11,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Ma Kichta",
   description: "Application de gestion des finances personnelles",
+  manifest: "/manifest.json",
+  themeColor: "#d4af37",
   icons: {
-    icon: "/logo_mk-no-bg.png",
-    apple: "/logo_mk-no-bg.png",
+    icon: "/icon-192.svg",
+    apple: "/icon-192.svg",
   },
 };
 
