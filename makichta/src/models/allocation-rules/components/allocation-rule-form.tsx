@@ -207,7 +207,7 @@ export function AllocationRuleForm({
               <SelectItem value={NONE_GOAL}>Aucun objectif</SelectItem>
               {goals.map((g) => (
                 <SelectItem key={g.id} value={g.id}>
-                  {g.label}
+                  {g.projectLabel ? `${g.label} · ${g.projectLabel}` : g.label}
                 </SelectItem>
               ))}
             </SelectContent>

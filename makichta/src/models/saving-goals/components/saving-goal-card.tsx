@@ -17,9 +17,11 @@ import { PRIORITY_LABELS } from "../constants/priority-labels";
 import { SAVING_TYPE_LABELS } from "../constants/saving-type-labels";
 import type { SavingGoal } from "../types/saving-goal";
 import type { SavingContribution } from "../types/saving-contribution";
+import type { SavingGoalItem } from "../types/saving-goal-item";
+import { SavingGoalItemForm } from "./saving-goal-item-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Pencil, Plus, Minus, PiggyBank, Trash2, CheckCircle2 } from "lucide-react";
+import { Pencil, Plus, Minus, PiggyBank, Trash2, CheckCircle2, ListPlus, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SavingGoalCardProps {
@@ -58,11 +60,16 @@ export function SavingGoalCard({
   const [validateCreateAsset, setValidateCreateAsset] = useState(true);
   const [validateDepreciationMonths, setValidateDepreciationMonths] = useState(60);
   const [isValidating, setIsValidating] = useState(false);
+  const [items, setItems] = useState<SavingGoalItem[]>([]);
+  const [itemDialogOpen, setItemDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<SavingGoalItem | null>(null);
+
+  const effectiveTarget = goal.effectiveTargetAmount ?? goal.targetAmount;
 
   const targetForBar =
     (goal.allocatedThisMonth != null && goal.allocatedThisMonth > 0)
       ? goal.allocatedThisMonth
-      : goal.targetAmount;
+      : effectiveTarget;
   const currentForBar =
     (goal.contributionsThisMonth != null && targetForBar === goal.allocatedThisMonth)
       ? goal.contributionsThisMonth
@@ -74,14 +81,14 @@ export function SavingGoalCard({
   const remaining = Math.max(0, targetForBar - currentForBar);
   const isMonthlyScope = targetForBar === goal.allocatedThisMonth && (goal.allocatedThisMonth ?? 0) > 0;
 
-  const restantTotal = Math.max(0, goal.targetAmount - goal.currentAmount);
+  const restantTotal = Math.max(0, effectiveTarget - goal.currentAmount);
   const monthsToTarget =
-    goal.targetAmount > 0 &&
+    effectiveTarget > 0 &&
     (goal.allocatedThisMonth ?? 0) > 0 &&
     restantTotal > 0
       ? Math.ceil(restantTotal / (goal.allocatedThisMonth ?? 1))
       : null;
-  const isTargetReached = goal.targetAmount > 0 && restantTotal <= 0;
+  const isTargetReached = effectiveTarget > 0 && restantTotal <= 0;
 
   useEffect(() => {
     fetch(`/api/saving-goals/${goal.id}/contributions`)
@@ -90,9 +97,43 @@ export function SavingGoalCard({
       .catch(() => setContributions([]));
   }, [goal.id, goal.currentAmount]);
 
+  useEffect(() => {
+    fetch(`/api/saving-goals/${goal.id}/items`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setItems)
+      .catch(() => setItems([]));
+  }, [goal.id]);
+
   const handleContribution = () => {
     setContribDialogOpen(false);
     onContribution();
+  };
+
+  const refreshItems = () => {
+    fetch(`/api/saving-goals/${goal.id}/items`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setItems)
+      .catch(() => setItems([]));
+    onContribution();
+  };
+
+  const handleDeleteItem = async (itemId: string) => {
+    if (!confirm("Supprimer cet item ?")) return;
+    const res = await fetch(`/api/saving-goals/items/${itemId}`, { method: "DELETE" });
+    if (res.ok) refreshItems();
+  };
+
+  const openAddItem = () => {
+    setEditingItem(null);
+    setItemDialogOpen(true);
+  };
+  const openEditItem = (item: SavingGoalItem) => {
+    setEditingItem(item);
+    setItemDialogOpen(true);
+  };
+  const closeItemDialog = () => {
+    setItemDialogOpen(false);
+    setEditingItem(null);
   };
 
   const handleRemoveContribution = async (contributionId: string) => {
@@ -150,8 +191,8 @@ export function SavingGoalCard({
             {isMonthlyScope && (
               <> · Prévu ce mois : {convertAndFormat(goal.allocatedThisMonth!)}</>
             )}
-            {!isMonthlyScope && goal.targetAmount <= 0 && (
-              <> · Cible : {convertAndFormat(goal.targetAmount)}</>
+            {!isMonthlyScope && effectiveTarget <= 0 && (
+              <> · Cible : {convertAndFormat(effectiveTarget)}</>
             )}
             {goal.deadline && ` · Échéance ${goal.deadline}`}
           </p>
@@ -231,7 +272,7 @@ export function SavingGoalCard({
                     )}
                   />
                   <Label htmlFor="validate-create-asset" className="text-sm font-normal cursor-pointer">
-                    Créer un actif dans Actifs & passifs ({convertAndFormat(goal.targetAmount)})
+                    Créer un actif dans Actifs & passifs ({convertAndFormat(effectiveTarget)})
                   </Label>
                 </label>
                 {validateCreateAsset && (
@@ -285,11 +326,11 @@ export function SavingGoalCard({
           />
         ) : (
           <>
-            {(goal.targetAmount > 0 || monthsToTarget != null || isTargetReached) && (
+            {(effectiveTarget > 0 || monthsToTarget != null || isTargetReached) && (
               <div className="flex flex-wrap gap-2">
-                {goal.targetAmount > 0 && (
+                {effectiveTarget > 0 && (
                   <span className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary">
-                    Cible : {convertAndFormat(goal.targetAmount)}
+                    Cible : {convertAndFormat(effectiveTarget)}
                   </span>
                 )}
                 {isTargetReached ? (
@@ -327,6 +368,90 @@ export function SavingGoalCard({
               {isMonthlyScope ? "Reste à épargner ce mois : " : "Reste à épargner : "}
               <strong className="text-foreground">{convertAndFormat(remaining)}</strong>
             </p>
+            {isActive && (
+              <>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">Items (détail de la cible)</span>
+                  <Dialog open={itemDialogOpen} onOpenChange={(open) => !open && closeItemDialog()}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" onClick={openAddItem}>
+                        <ListPlus size={14} className="mr-1" />
+                        Ajouter un item
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>
+                          {editingItem ? "Modifier l'item" : "Nouvel item"} · {goal.label}
+                        </DialogTitle>
+                      </DialogHeader>
+                      <SavingGoalItemForm
+                        key={editingItem?.id ?? "new"}
+                        savingGoalId={goal.id}
+                        item={editingItem}
+                        onSubmit={() => {
+                          closeItemDialog();
+                          refreshItems();
+                        }}
+                        onCancel={closeItemDialog}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                {items.length > 0 ? (
+                  <ul className="space-y-2 text-sm">
+                    {items.map((it) => (
+                      <li
+                        key={it.id}
+                        className="flex flex-wrap items-start justify-between gap-2 rounded-md border border-border p-2"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <span className="font-medium">{it.title}</span>
+                          {it.url && (
+                            <a
+                              href={it.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ml-1.5 inline-flex text-primary hover:underline"
+                            >
+                              <ExternalLink size={12} />
+                            </a>
+                          )}
+                          <span className="ml-2 text-muted-foreground">
+                            {convertAndFormat(it.amount)}
+                          </span>
+                          {it.description && (
+                            <p className="mt-0.5 text-xs text-muted-foreground">{it.description}</p>
+                          )}
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => openEditItem(it)}
+                          >
+                            Modifier
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteItem(it.id)}
+                          >
+                            Supprimer
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Aucun item. La cible utilise le montant saisi sur l&apos;objectif. Ajoutez des items pour détailler (la cible deviendra la somme des montants).
+                  </p>
+                )}
+              </>
+            )}
             {contributions.length > 0 && (
               <details className="text-xs">
                 <summary className="cursor-pointer text-muted-foreground hover:text-foreground">

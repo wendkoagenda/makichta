@@ -23,6 +23,8 @@ export interface SavingGoal {
   allocatedThisMonth?: number;
   /** Somme des contributions ce mois pour cet objectif. */
   contributionsThisMonth?: number;
+  /** Cible à atteindre : somme des montants des items si présents, sinon targetAmount. */
+  effectiveTargetAmount?: number;
 }
 
 export interface CreateSavingGoalInput {

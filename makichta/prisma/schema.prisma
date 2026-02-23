@@ -195,10 +195,27 @@ model SavingGoal {
   allocationRules AllocationRule[]
   contributions   SavingContribution[]
   wishlistItems   WishlistItem[]
+  items           SavingGoalItem[]
 
   @@index([userId])
   @@index([projectId])
   @@index([userId, status])
+}
+
+model SavingGoalItem {
+  id           String   @id @default(cuid())
+  savingGoalId String
+  title        String
+  url          String?
+  amount       Float
+  description  String?
+  order        Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  savingGoal SavingGoal @relation(fields: [savingGoalId], references: [id], onDelete: Cascade)
+
+  @@index([savingGoalId])
 }
 
 model SavingContribution {
