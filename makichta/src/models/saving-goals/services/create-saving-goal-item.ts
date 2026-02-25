@@ -32,6 +32,8 @@ export async function createSavingGoalItem(
     amount: Number(item.amount),
     description: item.description ?? null,
     order: item.order ?? null,
+    purchasedAt: item.purchasedAt?.toISOString() ?? null,
+    purchasedAmount: item.purchasedAmount != null ? Number(item.purchasedAmount) : null,
     createdAt: item.createdAt?.toISOString(),
     updatedAt: item.updatedAt?.toISOString(),
   };

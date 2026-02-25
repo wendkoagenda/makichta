@@ -31,12 +31,19 @@ export async function getSavingGoals(
   });
 
   let itemAggregates: { savingGoalId: string; _sum: { amount: number | null }; _count: number }[] = [];
+  let goalIdsWithItems: Set<string> = new Set();
   try {
     itemAggregates = await prisma.savingGoalItem.groupBy({
       by: ["savingGoalId"],
+      where: { purchasedAt: null },
       _sum: { amount: true },
       _count: true,
     });
+    const allItemsByGoal = await prisma.savingGoalItem.groupBy({
+      by: ["savingGoalId"],
+      _count: true,
+    });
+    goalIdsWithItems = new Set(allItemsByGoal.map((a) => a.savingGoalId));
   } catch {
     // Table ou client Prisma pas à jour : cible effective = targetAmount
   }
@@ -48,8 +55,9 @@ export async function getSavingGoals(
   );
 
   return rows.map((r) => {
-    const effectiveTargetAmount =
-      effectiveTargetByGoalId.get(r.id) ?? Number(r.targetAmount);
+    const effectiveTargetAmount = goalIdsWithItems.has(r.id)
+      ? (effectiveTargetByGoalId.get(r.id) ?? 0)
+      : Number(r.targetAmount);
     return {
       id: r.id,
       label: r.label,

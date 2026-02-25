@@ -4,6 +4,7 @@ import {
   REPARTITION_RULES,
   SAVING_GOAL_LABELS,
   SAVING_GOAL_EMERGENCY_LABEL,
+  DEMENAGEMENT_GOAL_ITEMS,
 } from "../src/lib/constants/repartition";
 import { DEFAULT_EXPENSE_CATEGORIES } from "../src/lib/constants";
 
@@ -71,6 +72,25 @@ async function main() {
   );
   const goalByLabel = new Map(goals.map((g) => [g.label, g.id]));
   console.log("5 objectifs d'épargne créés.");
+
+  const demenagementGoalId = goalByLabel.get("Déménagement");
+  if (demenagementGoalId) {
+    await Promise.all(
+      DEMENAGEMENT_GOAL_ITEMS.map((item, index) =>
+        prisma.savingGoalItem.create({
+          data: {
+            savingGoalId: demenagementGoalId,
+            title: item.title,
+            amount: item.amount,
+            order: index,
+          },
+        })
+      )
+    );
+    console.log(
+      `${DEMENAGEMENT_GOAL_ITEMS.length} items de l'objectif Déménagement créés.`
+    );
+  }
 
   const categories = await Promise.all(
     DEFAULT_EXPENSE_CATEGORIES.map((c) =>

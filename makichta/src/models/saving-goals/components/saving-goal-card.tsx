@@ -63,6 +63,10 @@ export function SavingGoalCard({
   const [items, setItems] = useState<SavingGoalItem[]>([]);
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<SavingGoalItem | null>(null);
+  const [purchaseItemDialogOpen, setPurchaseItemDialogOpen] = useState(false);
+  const [itemToMarkPurchased, setItemToMarkPurchased] = useState<SavingGoalItem | null>(null);
+  const [purchaseAmountInput, setPurchaseAmountInput] = useState("");
+  const [isMarkingPurchased, setIsMarkingPurchased] = useState(false);
 
   const effectiveTarget = goal.effectiveTargetAmount ?? goal.targetAmount;
 
@@ -134,6 +138,42 @@ export function SavingGoalCard({
   const closeItemDialog = () => {
     setItemDialogOpen(false);
     setEditingItem(null);
+  };
+
+  const openMarkPurchasedDialog = (item: SavingGoalItem) => {
+    setItemToMarkPurchased(item);
+    setPurchaseAmountInput("");
+    setPurchaseItemDialogOpen(true);
+  };
+  const handleMarkItemPurchased = async () => {
+    if (!itemToMarkPurchased) return;
+    setIsMarkingPurchased(true);
+    try {
+      const res = await fetch(`/api/saving-goals/items/${itemToMarkPurchased.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          purchasedAt: new Date().toISOString(),
+          purchasedAmount: purchaseAmountInput.trim() ? Number(purchaseAmountInput) : null,
+        }),
+      });
+      if (res.ok) {
+        setPurchaseItemDialogOpen(false);
+        setItemToMarkPurchased(null);
+        setPurchaseAmountInput("");
+        refreshItems();
+      }
+    } finally {
+      setIsMarkingPurchased(false);
+    }
+  };
+  const handleUnmarkItemPurchased = async (itemId: string) => {
+    const res = await fetch(`/api/saving-goals/items/${itemId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ purchasedAt: null, purchasedAmount: null }),
+    });
+    if (res.ok) refreshItems();
   };
 
   const handleRemoveContribution = async (contributionId: string) => {
@@ -398,52 +438,135 @@ export function SavingGoalCard({
                     </DialogContent>
                   </Dialog>
                 </div>
+                <Dialog
+                  open={purchaseItemDialogOpen}
+                  onOpenChange={(open) => {
+                    if (!open) {
+                      setPurchaseItemDialogOpen(false);
+                      setItemToMarkPurchased(null);
+                      setPurchaseAmountInput("");
+                    }
+                  }}
+                >
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>
+                        Marquer comme acheté · {itemToMarkPurchased?.title ?? ""}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <p className="text-sm text-muted-foreground">
+                      Montant prévu : {itemToMarkPurchased != null && convertAndFormat(itemToMarkPurchased.amount)}
+                    </p>
+                    <div className="space-y-2">
+                      <Label htmlFor="purchase-amount">Montant réel payé (optionnel)</Label>
+                      <Input
+                        id="purchase-amount"
+                        type="number"
+                        min={0}
+                        step="any"
+                        placeholder="Ex. 85000"
+                        value={purchaseAmountInput}
+                        onChange={(e) => setPurchaseAmountInput(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setPurchaseItemDialogOpen(false);
+                          setItemToMarkPurchased(null);
+                        }}
+                      >
+                        Annuler
+                      </Button>
+                      <Button onClick={handleMarkItemPurchased} disabled={isMarkingPurchased}>
+                        {isMarkingPurchased ? "Enregistrement…" : "Marquer comme acheté"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
                 {items.length > 0 ? (
                   <ul className="space-y-2 text-sm">
-                    {items.map((it) => (
-                      <li
-                        key={it.id}
-                        className="flex flex-wrap items-start justify-between gap-2 rounded-md border border-border p-2"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <span className="font-medium">{it.title}</span>
-                          {it.url && (
-                            <a
-                              href={it.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="ml-1.5 inline-flex text-primary hover:underline"
+                    {items.map((it) => {
+                      const isPurchased = !!it.purchasedAt;
+                      return (
+                        <li
+                          key={it.id}
+                          className={cn(
+                            "flex flex-wrap items-start justify-between gap-2 rounded-md border border-border p-2",
+                            isPurchased && "opacity-80 bg-muted/30"
+                          )}
+                        >
+                          <div className="min-w-0 flex-1">
+                            <span className={cn("font-medium", isPurchased && "line-through text-muted-foreground")}>
+                              {it.title}
+                            </span>
+                            {it.url && (
+                              <a
+                                href={it.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="ml-1.5 inline-flex text-primary hover:underline"
+                              >
+                                <ExternalLink size={12} />
+                              </a>
+                            )}
+                            <span className="ml-2 text-muted-foreground">
+                              {convertAndFormat(it.amount)}
+                            </span>
+                            {isPurchased && (
+                              <span className="ml-2 inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                                <CheckCircle2 size={14} />
+                                Acheté
+                                {it.purchasedAmount != null && (
+                                  <> · montant réel : {convertAndFormat(it.purchasedAmount)}</>
+                                )}
+                              </span>
+                            )}
+                            {it.description && (
+                              <p className="mt-0.5 text-xs text-muted-foreground">{it.description}</p>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => openEditItem(it)}
                             >
-                              <ExternalLink size={12} />
-                            </a>
-                          )}
-                          <span className="ml-2 text-muted-foreground">
-                            {convertAndFormat(it.amount)}
-                          </span>
-                          {it.description && (
-                            <p className="mt-0.5 text-xs text-muted-foreground">{it.description}</p>
-                          )}
-                        </div>
-                        <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs"
-                            onClick={() => openEditItem(it)}
-                          >
-                            Modifier
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs text-destructive hover:text-destructive"
-                            onClick={() => handleDeleteItem(it.id)}
-                          >
-                            Supprimer
-                          </Button>
-                        </div>
-                      </li>
-                    ))}
+                              Modifier
+                            </Button>
+                            {isPurchased ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs"
+                                onClick={() => handleUnmarkItemPurchased(it.id)}
+                              >
+                                Annuler (non acheté)
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs text-primary"
+                                onClick={() => openMarkPurchasedDialog(it)}
+                              >
+                                Marquer comme acheté
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs text-destructive hover:text-destructive"
+                              onClick={() => handleDeleteItem(it.id)}
+                            >
+                              Supprimer
+                            </Button>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : (
                   <p className="text-xs text-muted-foreground">

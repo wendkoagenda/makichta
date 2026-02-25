@@ -27,6 +27,13 @@ export async function updateSavingGoalItem(
         description: input.description?.trim() || null,
       }),
       ...(input.order !== undefined && { order: input.order }),
+      ...(input.purchasedAt !== undefined && {
+        purchasedAt: input.purchasedAt != null ? new Date(input.purchasedAt) : null,
+      }),
+      ...(input.purchasedAmount !== undefined && {
+        purchasedAmount:
+          input.purchasedAmount != null ? Math.max(0, input.purchasedAmount) : null,
+      }),
     },
   });
 
@@ -38,6 +45,8 @@ export async function updateSavingGoalItem(
     amount: Number(updated.amount),
     description: updated.description ?? null,
     order: updated.order ?? null,
+    purchasedAt: updated.purchasedAt?.toISOString() ?? null,
+    purchasedAmount: updated.purchasedAmount != null ? Number(updated.purchasedAmount) : null,
     createdAt: updated.createdAt?.toISOString(),
     updatedAt: updated.updatedAt?.toISOString(),
   };

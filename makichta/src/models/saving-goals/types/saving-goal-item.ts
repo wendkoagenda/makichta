@@ -6,6 +6,8 @@ export interface SavingGoalItem {
   amount: number;
   description: string | null;
   order: number | null;
+  purchasedAt: string | null;
+  purchasedAmount: number | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -25,4 +27,6 @@ export interface UpdateSavingGoalItemInput {
   amount?: number;
   description?: string | null;
   order?: number | null;
+  purchasedAt?: string | null;
+  purchasedAmount?: number | null;
 }

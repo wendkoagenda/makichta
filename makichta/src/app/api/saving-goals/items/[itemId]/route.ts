@@ -13,6 +13,8 @@ function itemToJson(r: {
   amount: unknown;
   description: string | null;
   order: number | null;
+  purchasedAt?: Date | null;
+  purchasedAmount?: number | null;
   createdAt?: Date | null;
   updatedAt?: Date | null;
 }) {
@@ -24,6 +26,8 @@ function itemToJson(r: {
     amount: Number(r.amount),
     description: r.description ?? null,
     order: r.order ?? null,
+    purchasedAt: r.purchasedAt?.toISOString() ?? null,
+    purchasedAmount: r.purchasedAmount != null ? Number(r.purchasedAmount) : null,
     createdAt: r.createdAt?.toISOString(),
     updatedAt: r.updatedAt?.toISOString(),
   };
@@ -70,7 +74,7 @@ export async function PUT(
 
   try {
     const body = await request.json().catch(() => ({}));
-    const { title, url, amount, description, order } = body;
+    const { title, url, amount, description, order, purchasedAt, purchasedAmount } = body;
 
     const updated = await updateSavingGoalItem(session.user.id, itemId, {
       ...(title !== undefined && { title: String(title) }),
@@ -80,6 +84,12 @@ export async function PUT(
         description: description != null ? String(description) : null,
       }),
       ...(order !== undefined && { order: order != null ? Number(order) : null }),
+      ...(purchasedAt !== undefined && {
+        purchasedAt: purchasedAt != null ? String(purchasedAt) : null,
+      }),
+      ...(purchasedAmount !== undefined && {
+        purchasedAmount: purchasedAmount != null ? Number(purchasedAmount) : null,
+      }),
     });
 
     if (!updated) {

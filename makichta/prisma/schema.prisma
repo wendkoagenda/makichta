@@ -203,15 +203,17 @@ model SavingGoal {
 }
 
 model SavingGoalItem {
-  id           String   @id @default(cuid())
-  savingGoalId String
-  title        String
-  url          String?
-  amount       Float
-  description  String?
-  order        Int?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String    @id @default(cuid())
+  savingGoalId    String
+  title           String
+  url             String?
+  amount          Float
+  description     String?
+  order           Int?
+  purchasedAt     DateTime?
+  purchasedAmount Float?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   savingGoal SavingGoal @relation(fields: [savingGoalId], references: [id], onDelete: Cascade)
 

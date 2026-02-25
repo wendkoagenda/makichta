@@ -29,3 +29,37 @@ export const SAVING_GOAL_LABELS = [
 
 /** Fonds d'urgence est de type EMERGENCY, les autres sont TARGET. */
 export const SAVING_GOAL_EMERGENCY_LABEL = "Fonds d'urgence";
+
+/** Items par défaut pour l'objectif d'épargne Déménagement (seed). */
+export const DEMENAGEMENT_GOAL_ITEMS = [
+  { title: "Lit 2 places", amount: 150000 },
+  { title: "Matelas 2 places", amount: 90000 },
+  { title: "Grande armoire à vêtements", amount: 195000 },
+  { title: "Table de chevet", amount: 20000 },
+  { title: "Rideaux de chambre", amount: 20000 },
+  { title: "Salon 5 places", amount: 200000 },
+  { title: "Table basse", amount: 50000 },
+  { title: "TV (55 pouces)", amount: 50000 },
+  { title: "Rideaux de salon", amount: 10000 },
+  { title: "Tapis de salon (facultatif)", amount: 45000 },
+  { title: "Réfrigérateur", amount: 190000 },
+  { title: "Gaz", amount: 27000 },
+  { title: "Four (facultatif)", amount: 90000 },
+  { title: "Micro-ondes (facultatif)", amount: 75000 },
+  { title: "Bouilloire électrique", amount: 12500 },
+  {
+    title:
+      "Casseroles, chauffe-eau, assiettes, couteaux, cuillères, fourchettes, verres, torchons",
+    amount: 30000,
+  },
+  { title: "Bureau et chaise de bureau (pas primordial au début)", amount: 150000 },
+  { title: "Onduleur", amount: 30000 },
+  { title: "Wi-Fi", amount: 15000 },
+  { title: "Multiprises", amount: 10000 },
+  { title: "Lampe de bureau (facultatif)", amount: 10000 },
+  { title: "Fer à repasser", amount: 15000 },
+  { title: "Balai + serpillière + seaux", amount: 15000 },
+  { title: "Miroir", amount: 25000 },
+  { title: "Poubelle", amount: 7500 },
+  { title: "Trousse de premiers secours", amount: 18000 },
+] as const;

@@ -18,6 +18,24 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Seed de la base
+
+Pour peupler la base avec un utilisateur de démo, les catégories de dépenses, les règles d’allocation et les objectifs d’épargne (dont les items Déménagement) :
+
+```bash
+npm run seed
+# or
+pnpm seed
+```
+
+Variante via Prisma :
+
+```bash
+npm run db:seed
+# or
+pnpm db:seed
+```
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
