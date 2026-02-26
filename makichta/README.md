@@ -36,6 +36,16 @@ npm run db:seed
 pnpm db:seed
 ```
 
+## Vider la base
+
+Pour réinitialiser la base (supprime toutes les données et réapplique les migrations) :
+
+```bash
+npm run db:reset
+# or
+pnpm db:reset
+```
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
